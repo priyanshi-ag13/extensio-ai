@@ -1,0 +1,19 @@
+# Never share these!
+node_modules/
+.env
+.DS_Store
+
+# Temporary files (Week 2)
+temp/
+downloads/
+*.zip
+
+# VS Code settings
+.vscode/
+
+# Logs
+*.log
+echo "node_modules/" >> .gitignore
+echo ".env" >> .gitignore
+echo "generated-extension-*/" >> .gitignore
+echo "*.zip" >> .gitignore
