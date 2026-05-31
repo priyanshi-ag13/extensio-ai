@@ -1,8 +1,12 @@
-// backend/ai-generator.js - WORKING VERSION (May 2026)
-// Using the ONLY model that works with free tier: gemini-2.5-flash
+// backend/ai-generator.js - UPDATED with file saving!
+// Now generates AND saves Chrome extensions automatically
+// Day 2 - Commit 4: Integrated file saver with AI
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 require('dotenv').config();
+
+// Import our file saver module from Commit 3
+const fileSaver = require('./file-saver');
 
 // Get API key from .env file
 const myApiKey = process.env.GEMINI_API_KEY;
@@ -19,7 +23,7 @@ console.log("✅ API Key found! Length:", myApiKey.length);
 // Connect to Google AI
 const aiClient = new GoogleGenerativeAI(myApiKey);
 
-// Special instructions for AI
+// Special instructions for AI - IMPROVED VERSION
 const mySpecialPrompt = `You are a Chrome Extension expert. 
 Output ONLY valid JSON. No extra text, no explanations, no markdown.
 
@@ -45,7 +49,7 @@ async function getExtensionCode(userRequest) {
     console.log("📝 Request:", userRequest);
     
     try {
-        // ✅ THIS IS THE CORRECT MODEL NAME FOR MAY 2026
+        // Using the working model (gemini-2.5-flash)
         const aiModel = aiClient.getGenerativeModel({ model: "gemini-2.5-flash" });
         
         const fullPrompt = mySpecialPrompt + "\n\nUSER WANTS: " + userRequest;
@@ -73,68 +77,96 @@ async function getExtensionCode(userRequest) {
     } catch (error) {
         console.log("❌ Error:", error.message);
         if (error.message.includes("404")) {
-            console.log("\n💡 The model name might be wrong. Current working models:");
-            console.log("   - gemini-2.5-flash (RECOMMENDED - free tier)");
-            console.log("   - gemini-2.5-pro (paid tier)");
+            console.log("\n💡 Model not found. Current working models:");
+            console.log("   - gemini-2.5-flash (RECOMMENDED)");
+            console.log("   - gemini-2.5-pro");
         }
         return null;
     }
 }
 
-// Function to save files
-function saveExtensionFiles(extensionCode, folderName) {
-    const fs = require('fs');
-    const path = require('path');
-    
-    if (!fs.existsSync(folderName)) {
-        fs.mkdirSync(folderName, { recursive: true });
-    }
-    
-    for (const [fileName, fileContent] of Object.entries(extensionCode)) {
-        const filePath = path.join(folderName, fileName);
-        fs.writeFileSync(filePath, fileContent);
-        console.log(`💾 Saved: ${fileName}`);
-    }
-    
-    console.log(`\n📁 Files saved to: ${folderName}/`);
-}
-
-// Run the test
-async function test() {
+// NEW FUNCTION: Generate AND save in one go!
+async function generateAndSaveExtension(userRequest) {
     console.log("\n" + "🌟".repeat(15));
-    console.log("EXTENSIO.AI - WEEK 1 TEST");
-    console.log("🌟".repeat(15) + "\n");
+    console.log("EXTENSIO.AI - GENERATE & SAVE");
+    console.log("🌟".repeat(15));
     
-    const testRequest = "Make a Chrome extension that changes background color to light blue";
-    const result = await getExtensionCode(testRequest);
+    // Step 1: Get code from AI
+    const extensionCode = await getExtensionCode(userRequest);
     
-    if (result) {
-        console.log("\n✅ VERIFICATION PASSED!");
-        console.log("📁 Files created:", Object.keys(result));
-        
-        // Preview the files
-        if (result["content.js"]) {
-            console.log("\n🔍 Preview of content.js:");
-            console.log("=".repeat(40));
-            console.log(result["content.js"].substring(0, 200));
-            console.log("=".repeat(40));
-        }
-        
-        // Save files to test in Chrome
-        const timestamp = Date.now();
-        const folderName = `generated-extension-${timestamp}`;
-        saveExtensionFiles(result, folderName);
-        
-        console.log("\n📖 To test in Chrome:");
-        console.log("   1. Open Chrome and go to: chrome://extensions");
-        console.log("   2. Turn ON 'Developer mode' (top right)");
-        console.log("   3. Click 'Load unpacked'");
-        console.log("   4. Select the folder:", folderName);
-        
-    } else {
-        console.log("\n❌ VERIFICATION FAILED");
+    if (!extensionCode) {
+        console.log("\n❌ Failed to generate extension. Please try again.");
+        return false;
     }
+    
+    // Step 2: Check if we have the required files
+    const requiredFiles = ['manifest.json', 'content.js', 'popup.html'];
+    const hasAllFiles = requiredFiles.every(file => extensionCode[file]);
+    
+    if (!hasAllFiles) {
+        console.log("\n⚠️ Warning: Missing some files!");
+        console.log("Files received:", Object.keys(extensionCode));
+        console.log("Expected: manifest.json, content.js, popup.html");
+    }
+    
+    // Step 3: Create a unique folder name using timestamp
+    const timestamp = Date.now();
+    const folderName = `generated-extension-${timestamp}`;
+    
+    // Step 4: Save the files using our file-saver module
+    console.log("\n💾 Saving files to your computer...");
+    const saved = fileSaver.saveExtensionFiles(extensionCode, folderName);
+    
+    if (saved) {
+        console.log("\n✅ EXTENSION GENERATED AND SAVED SUCCESSFULLY!");
+        
+        // Step 5: Show installation instructions
+        fileSaver.showInstallInstructions(folderName);
+        
+        // Step 6: Show preview of what was generated
+        console.log("\n🔍 PREVIEW OF GENERATED CODE:");
+        console.log("=".repeat(50));
+        if (extensionCode["content.js"]) {
+            console.log("\n📄 content.js (first 200 characters):");
+            console.log("-".repeat(30));
+            console.log(extensionCode["content.js"].substring(0, 200));
+            if (extensionCode["content.js"].length > 200) {
+                console.log("... (truncated)");
+            }
+        }
+        console.log("\n" + "=".repeat(50));
+        
+        return true;
+    }
+    
+    return false;
 }
 
-// Run the test
-test();
+// Function to test with multiple different requests
+async function runMultipleTests() {
+    console.log("\n" + "🚀".repeat(10));
+    console.log("RUNNING TESTS");
+    console.log("🚀".repeat(10));
+    
+    // Test 1: Simple background color
+    console.log("\n📋 TEST 1: Background color changer");
+    await generateAndSaveExtension("Make a Chrome extension that changes webpage background to light blue");
+    
+    // Ask if user wants to test another
+    console.log("\n" + "💡".repeat(10));
+    console.log("To test another extension, call generateAndSaveExtension() with your own request");
+    console.log("Example: generateAndSaveExtension('Make extension that hides all images')");
+    console.log("💡".repeat(10));
+}
+
+// Run the main test
+// You can change this to any request you want!
+async function main() {
+    // Change this text to whatever extension you want to create!
+    const myRequest = "Make a Chrome extension that changes background color to light blue";
+    
+    await generateAndSaveExtension(myRequest);
+}
+
+// Run the program
+main();
