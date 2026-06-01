@@ -1,6 +1,6 @@
-// backend/zip-packager.js
-// Simple ZIP packager using archiver v5 (stable version)
-// Day 3 - Commit 5
+// backend/zip-packager.js - UPDATED with auto-cleanup!
+// Now automatically cleans up temp folders after zipping
+// Day 3 - Commit 7: Added auto-cleanup system
 
 const fs = require('fs');
 const archiver = require('archiver');
@@ -73,7 +73,7 @@ async function createTimedZip(sourceFolder) {
 function deleteFolder(folderPath) {
     if (!fs.existsSync(folderPath)) return;
     
-    console.log(`   🗑️ Deleting: ${folderPath}/`);
+    console.log(`   🗑️ Cleaning up: ${folderPath}/`);
     
     const deleteRecursive = (p) => {
         if (fs.existsSync(p)) {
@@ -92,18 +92,74 @@ function deleteFolder(folderPath) {
     
     try {
         deleteRecursive(folderPath);
-        console.log(`   ✅ Deleted successfully`);
+        console.log(`   ✅ Cleanup complete!`);
     } catch (error) {
         console.log(`   ⚠️ Could not delete: ${error.message}`);
     }
 }
 
-module.exports = { createZip, createTimedZip, deleteFolder };
+/**
+ * NEW: Create ZIP and automatically clean up source folder
+ * @param {string} sourceFolder - Folder to zip (will be deleted after)
+ * @returns {Promise<string>} - Path to created ZIP
+ */
+async function createZipAndCleanup(sourceFolder) {
+    console.log(`\n🧹 Auto-cleanup mode enabled`);
+    
+    // Create the ZIP
+    const zipPath = await createTimedZip(sourceFolder);
+    
+    // Automatically delete the source folder
+    deleteFolder(sourceFolder);
+    
+    return zipPath;
+}
+
+/**
+ * NEW: Clean up old ZIP files (keep only recent ones)
+ * @param {number} keepCount - Number of recent ZIPs to keep (default: 10)
+ */
+function cleanupOldZips(keepCount = 10) {
+    const downloadsDir = path.join(__dirname, '..', 'downloads');
+    
+    if (!fs.existsSync(downloadsDir)) {
+        console.log(`📁 No downloads folder found`);
+        return;
+    }
+    
+    const files = fs.readdirSync(downloadsDir);
+    const zipFiles = files.filter(f => f.endsWith('.zip'))
+        .map(f => ({
+            name: f,
+            path: path.join(downloadsDir, f),
+            mtime: fs.statSync(path.join(downloadsDir, f)).mtime
+        }))
+        .sort((a, b) => b.mtime - a.mtime); // Newest first
+    
+    if (zipFiles.length > keepCount) {
+        const toDelete = zipFiles.slice(keepCount);
+        console.log(`\n🧹 Cleaning up old ZIP files...`);
+        console.log(`   Keeping ${keepCount} most recent, deleting ${toDelete.length} old ones`);
+        
+        for (const file of toDelete) {
+            fs.unlinkSync(file.path);
+            console.log(`   🗑️ Deleted: ${file.name}`);
+        }
+    }
+}
+
+module.exports = { 
+    createZip, 
+    createTimedZip, 
+    deleteFolder,
+    createZipAndCleanup,  // NEW!
+    cleanupOldZips         // NEW!
+};
 
 // Test the module
 if (require.main === module) {
     console.log("\n" + "🧪".repeat(10));
-    console.log("TESTING ZIP PACKAGER");
+    console.log("TESTING ZIP PACKAGER WITH CLEANUP");
     console.log("🧪".repeat(10));
     
     const testFolder = "test-zip-folder";
@@ -117,22 +173,21 @@ if (require.main === module) {
         console.log(`\n📁 Created test folder with 3 files`);
     }
     
-    // Test ZIP
-    createTimedZip(testFolder)
+    // Test ZIP with auto-cleanup
+    createZipAndCleanup(testFolder)
         .then(zipPath => {
-            console.log(`\n✅ ZIP TEST PASSED!`);
-            console.log(`   📍 Location: ${zipPath}`);
+            console.log(`\n✅ AUTO-CLEANUP TEST PASSED!`);
+            console.log(`   📍 ZIP saved to: ${zipPath}`);
             
-            // Check if ZIP exists
-            if (fs.existsSync(zipPath)) {
-                const stats = fs.statSync(zipPath);
-                console.log(`   📦 File size: ${(stats.size / 1024).toFixed(2)} KB`);
+            // Verify folder is gone
+            if (!fs.existsSync(testFolder)) {
+                console.log(`   ✅ Temp folder was automatically deleted!`);
             }
             
-            // Clean up
-            deleteFolder(testFolder);
+            // Test old ZIP cleanup
+            cleanupOldZips(5);
         })
         .catch(err => {
-            console.log(`\n❌ ZIP TEST FAILED: ${err.message}`);
+            console.log(`\n❌ TEST FAILED: ${err.message}`);
         });
 }

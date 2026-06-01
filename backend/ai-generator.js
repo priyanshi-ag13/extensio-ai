@@ -114,10 +114,11 @@ async function generateAndZipExtension(userRequest) {
         return false;
     }
     
-    // Step 4: Create ZIP file (NEW!)
-    console.log("\n📦 Creating ZIP package...");
-    try {
-        const zipPath = await zipPackager.createTimedZip(folderName);
+   // Step 4: Create ZIP with auto-cleanup (NEW!)
+console.log("\n📦 Creating ZIP package with auto-cleanup...");
+try {
+    // This will create ZIP AND delete the temp folder automatically!
+    const zipPath = await zipPackager.createZipAndCleanup(folderName);
         console.log(`\n✅ ZIP created successfully!`);
         console.log(`   📍 Location: ${zipPath}`);
         
