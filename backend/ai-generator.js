@@ -1,12 +1,13 @@
-// backend/ai-generator.js - UPDATED with file saving!
-// Now generates AND saves Chrome extensions automatically
-// Day 2 - Commit 4: Integrated file saver with AI
+// backend/ai-generator.js - UPDATED with ZIP packaging!
+// Now generates, saves, AND zips Chrome extensions automatically
+// Day 3 - Commit 6: Integrated ZIP packaging with AI
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 require('dotenv').config();
 
-// Import our file saver module from Commit 3
+// Import our modules
 const fileSaver = require('./file-saver');
+const zipPackager = require('./zip-packager');  // NEW!
 
 // Get API key from .env file
 const myApiKey = process.env.GEMINI_API_KEY;
@@ -23,7 +24,7 @@ console.log("✅ API Key found! Length:", myApiKey.length);
 // Connect to Google AI
 const aiClient = new GoogleGenerativeAI(myApiKey);
 
-// Special instructions for AI - IMPROVED VERSION
+// Special instructions for AI
 const mySpecialPrompt = `You are a Chrome Extension expert. 
 Output ONLY valid JSON. No extra text, no explanations, no markdown.
 
@@ -41,26 +42,24 @@ Example for "change background to red":
   "popup.html": "<!DOCTYPE html><html><head><style>body{width:200px;padding:10px}</style></head><body><h3>Background Changed!</h3></body></html>"
 }
 
-Remember: Output ONLY the JSON. Start with { and end with }.`;
+Remember: Output ONLY the JSON. Start with { and end with {.`;
 
 // Function to get code from AI
 async function getExtensionCode(userRequest) {
-    console.log("\n🤖 Generating extension...");
-    console.log("📝 Request:", userRequest);
+    console.log("\n🤖 Contacting AI...");
+    console.log("📝 Your request:", userRequest);
     
     try {
-        // Using the working model (gemini-2.5-flash)
         const aiModel = aiClient.getGenerativeModel({ model: "gemini-2.5-flash" });
-        
         const fullPrompt = mySpecialPrompt + "\n\nUSER WANTS: " + userRequest;
-        console.log("⏳ Sending to AI (this takes 5-10 seconds)...");
+        console.log("⏳ AI is thinking (5-10 seconds)...");
         
         const result = await aiModel.generateContent(fullPrompt);
         let responseText = result.response.text();
         
-        console.log("✅ Got response from AI!");
+        console.log("✅ Received response from AI!");
         
-        // Clean the response - remove any markdown code blocks
+        // Clean the response
         responseText = responseText.trim();
         if (responseText.startsWith("```json")) {
             responseText = responseText.replace("```json", "").replace("```", "");
@@ -69,26 +68,21 @@ async function getExtensionCode(userRequest) {
             responseText = responseText.replace("```", "").replace("```", "");
         }
         
-        // Try to parse as JSON
+        // Parse JSON
         const extensionCode = JSON.parse(responseText);
-        console.log("✅ Success! AI gave valid JSON");
+        console.log("✅ JSON is valid!");
         return extensionCode;
         
     } catch (error) {
         console.log("❌ Error:", error.message);
-        if (error.message.includes("404")) {
-            console.log("\n💡 Model not found. Current working models:");
-            console.log("   - gemini-2.5-flash (RECOMMENDED)");
-            console.log("   - gemini-2.5-pro");
-        }
         return null;
     }
 }
 
-// NEW FUNCTION: Generate AND save in one go!
-async function generateAndSaveExtension(userRequest) {
+// NEW: Generate, save, AND create ZIP!
+async function generateAndZipExtension(userRequest) {
     console.log("\n" + "🌟".repeat(15));
-    console.log("EXTENSIO.AI - GENERATE & SAVE");
+    console.log("EXTENSIO.AI - GENERATE & ZIP");
     console.log("🌟".repeat(15));
     
     // Step 1: Get code from AI
@@ -99,73 +93,101 @@ async function generateAndSaveExtension(userRequest) {
         return false;
     }
     
-    // Step 2: Check if we have the required files
+    // Step 2: Check required files
     const requiredFiles = ['manifest.json', 'content.js', 'popup.html'];
     const hasAllFiles = requiredFiles.every(file => extensionCode[file]);
     
     if (!hasAllFiles) {
-        console.log("\n⚠️ Warning: Missing some files!");
+        console.log("\n⚠️ Warning: Missing files!");
         console.log("Files received:", Object.keys(extensionCode));
-        console.log("Expected: manifest.json, content.js, popup.html");
     }
     
-    // Step 3: Create a unique folder name using timestamp
+    // Step 3: Create folder and save files
     const timestamp = Date.now();
     const folderName = `generated-extension-${timestamp}`;
     
-    // Step 4: Save the files using our file-saver module
-    console.log("\n💾 Saving files to your computer...");
+    console.log("\n💾 Saving files...");
     const saved = fileSaver.saveExtensionFiles(extensionCode, folderName);
     
-    if (saved) {
-        console.log("\n✅ EXTENSION GENERATED AND SAVED SUCCESSFULLY!");
-        
-        // Step 5: Show installation instructions
-        fileSaver.showInstallInstructions(folderName);
-        
-        // Step 6: Show preview of what was generated
-        console.log("\n🔍 PREVIEW OF GENERATED CODE:");
-        console.log("=".repeat(50));
-        if (extensionCode["content.js"]) {
-            console.log("\n📄 content.js (first 200 characters):");
-            console.log("-".repeat(30));
-            console.log(extensionCode["content.js"].substring(0, 200));
-            if (extensionCode["content.js"].length > 200) {
-                console.log("... (truncated)");
-            }
-        }
-        console.log("\n" + "=".repeat(50));
-        
-        return true;
+    if (!saved) {
+        console.log("\n❌ Failed to save files.");
+        return false;
     }
     
-    return false;
+    // Step 4: Create ZIP file (NEW!)
+    console.log("\n📦 Creating ZIP package...");
+    try {
+        const zipPath = await zipPackager.createTimedZip(folderName);
+        console.log(`\n✅ ZIP created successfully!`);
+        console.log(`   📍 Location: ${zipPath}`);
+        
+        // Step 5: Show installation instructions
+        console.log("\n" + "=".repeat(60));
+        console.log("🎉 EXTENSION READY FOR DOWNLOAD!");
+        console.log("=".repeat(60));
+        console.log(`\n📦 Download: The ZIP file is saved in the "downloads" folder`);
+        console.log(`   File name: ${require('path').basename(zipPath)}`);
+        
+        // Step 6: Show Chrome installation instructions
+        console.log("\n📖 TO INSTALL IN CHROME:");
+        console.log("   1. Open Chrome and go to: chrome://extensions");
+        console.log("   2. Turn ON 'Developer mode' (top right)");
+        console.log("   3. Drag and drop the ZIP file OR click 'Load unpacked'");
+        console.log("   4. Select the extracted folder");
+        
+        // Step 7: Clean up temp folder (optional - for Commit 7)
+        // zipPackager.deleteFolder(folderName);
+        
+        console.log("\n" + "=".repeat(60));
+        return true;
+        
+    } catch (error) {
+        console.log("\n❌ Failed to create ZIP:", error.message);
+        return false;
+    }
 }
 
-// Function to test with multiple different requests
-async function runMultipleTests() {
-    console.log("\n" + "🚀".repeat(10));
-    console.log("RUNNING TESTS");
-    console.log("🚀".repeat(10));
+// Preview of generated code
+function showPreview(extensionCode) {
+    console.log("\n🔍 CODE PREVIEW:");
+    console.log("=".repeat(40));
     
-    // Test 1: Simple background color
-    console.log("\n📋 TEST 1: Background color changer");
-    await generateAndSaveExtension("Make a Chrome extension that changes webpage background to light blue");
+    if (extensionCode["content.js"]) {
+        console.log("\n📄 content.js:");
+        console.log("-".repeat(20));
+        const preview = extensionCode["content.js"].substring(0, 200);
+        console.log(preview);
+        if (extensionCode["content.js"].length > 200) {
+            console.log("... (truncated)");
+        }
+    }
     
-    // Ask if user wants to test another
-    console.log("\n" + "💡".repeat(10));
-    console.log("To test another extension, call generateAndSaveExtension() with your own request");
-    console.log("Example: generateAndSaveExtension('Make extension that hides all images')");
-    console.log("💡".repeat(10));
+    if (extensionCode["manifest.json"]) {
+        console.log("\n📄 manifest.json:");
+        console.log("-".repeat(20));
+        const preview = extensionCode["manifest.json"].substring(0, 150);
+        console.log(preview);
+        if (extensionCode["manifest.json"].length > 150) {
+            console.log("... (truncated)");
+        }
+    }
+    
+    console.log("\n" + "=".repeat(40));
 }
 
-// Run the main test
-// You can change this to any request you want!
+// Main function - YOU CAN CHANGE THIS REQUEST!
 async function main() {
-    // Change this text to whatever extension you want to create!
+    // ✏️ CHANGE THIS TEXT to test different extensions!
     const myRequest = "Make a Chrome extension that changes background color to light blue";
     
-    await generateAndSaveExtension(myRequest);
+    const result = await generateAndZipExtension(myRequest);
+    
+    if (result) {
+        console.log("\n✅ COMMIT 6 COMPLETE!");
+        console.log("   AI + File Saver + ZIP Packager are working together!");
+    } else {
+        console.log("\n❌ Something went wrong. Check errors above.");
+    }
 }
 
 // Run the program
