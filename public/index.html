@@ -1,0 +1,111 @@
+<!-- public/index.html -->
+<!-- Extensio.ai - No-Code Extension Factory -->
+<!-- Day 4 - Commit 9: Web Interface -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extensio.ai - Create Chrome Extensions with AI</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header>
+            <div class="logo">
+                <span class="logo-icon">🤖</span>
+                <span class="logo-text">Extensio<span class="highlight">.ai</span></span>
+            </div>
+            <p class="tagline">Turn your ideas into Chrome extensions • No coding required</p>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Input Section -->
+            <div class="input-section">
+                <label for="prompt" class="input-label">
+                    What Chrome extension do you want to create?
+                </label>
+                <div class="input-wrapper">
+                    <textarea 
+                        id="prompt" 
+                        class="prompt-input" 
+                        placeholder="Example: Make a Chrome extension that changes all images on a website to a smiley face emoji..."
+                        rows="4"
+                    >Make a Chrome extension that changes the background color of any webpage to a beautiful gradient blue</textarea>
+                    <button id="generateBtn" class="generate-btn">
+                        <span class="btn-icon">✨</span>
+                        Generate Extension
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading Section (Hidden by default) -->
+            <div id="loadingSection" class="loading-section hidden">
+                <div class="spinner"></div>
+                <p class="loading-text">AI is creating your extension...</p>
+                <p class="loading-subtext">This usually takes 5-10 seconds</p>
+            </div>
+
+            <!-- Result Section (Hidden by default) -->
+            <div id="resultSection" class="result-section hidden">
+                <div class="success-card">
+                    <div class="success-icon">🎉</div>
+                    <h2>Extension Generated Successfully!</h2>
+                    <p>Your Chrome extension is ready to download and install.</p>
+                    
+                    <div class="download-card">
+                        <div class="download-info">
+                            <span class="download-icon">📦</span>
+                            <div class="download-details">
+                                <strong>Extension Package</strong>
+                                <span>Ready to install in Chrome</span>
+                            </div>
+                        </div>
+                        <button id="downloadBtn" class="download-btn">
+                            ⬇️ Download ZIP
+                        </button>
+                    </div>
+
+                    <div class="install-instructions">
+                        <h3>📖 How to Install</h3>
+                        <ol>
+                            <li>Open Chrome and go to <code>chrome://extensions</code></li>
+                            <li>Turn ON <strong>"Developer mode"</strong> (top right corner)</li>
+                            <li>Drag and drop the downloaded ZIP file</li>
+                            <li>Or click "Load unpacked" and select the extracted folder</li>
+                            <li>Your extension is now installed! Click the puzzle icon to find it</li>
+                        </ol>
+                    </div>
+
+                    <button id="newExtensionBtn" class="new-btn">
+                        🔄 Create Another Extension
+                    </button>
+                </div>
+            </div>
+
+            <!-- Error Section (Hidden by default) -->
+            <div id="errorSection" class="error-section hidden">
+                <div class="error-card">
+                    <div class="error-icon">⚠️</div>
+                    <h2>Something Went Wrong</h2>
+                    <p id="errorMessage" class="error-message"></p>
+                    <button id="retryBtn" class="retry-btn">
+                        🔄 Try Again
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <p>Powered by Google Gemini AI • Chrome Extension Manifest V3</p>
+            <p class="footer-small">Extensio.ai - No Code Extension Factory</p>
+        </footer>
+    </div>
+
+    <script src="/script.js"></script>
+</body>
+</html>
