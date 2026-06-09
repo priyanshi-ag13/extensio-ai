@@ -5,7 +5,11 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const connectDB = require('./backend/db');
+const cookieParser = require('cookie-parser');
+
 require('dotenv').config();
+
 
 // Import our modules
 const fileSaver = require('./backend/file-saver');
@@ -17,6 +21,8 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());  // To parse JSON data from frontend
 app.use(express.static('public'));  // Serve static files (HTML, CSS, JS)
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 
 // Make downloads folder accessible for download
 app.use('/downloads', express.static(path.join(__dirname, 'downloads')));
@@ -109,7 +115,11 @@ app.post('/api/generate', async (req, res) => {
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Extensio.ai server is running!' });
 });
-
+connectDB().then(success => {
+    if (!success) {
+        console.log('⚠️ Continuing without database... (some features will not work)');
+    }
+});
 // Start the server
 app.listen(PORT, () => {
     console.log(`
