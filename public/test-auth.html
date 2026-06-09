@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Auth - Extensio.ai</title>
+    <style>
+        body { font-family: Arial; padding: 20px; max-width: 500px; margin: auto; }
+        input, button { display: block; width: 100%; margin: 10px 0; padding: 10px; }
+        button { background: #667eea; color: white; border: none; cursor: pointer; }
+        .result { background: #f0f0f0; padding: 10px; margin-top: 20px; white-space: pre-wrap; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>🔐 Extensio.ai - Test Authentication</h1>
+    
+    <h2>Sign Up</h2>
+    <input type="text" id="signupName" placeholder="Name" value="Test User">
+    <input type="email" id="signupEmail" placeholder="Email" value="test@example.com">
+    <input type="password" id="signupPassword" placeholder="Password" value="123456">
+    <button onclick="signup()">Create Account</button>
+    
+    <h2>Log In</h2>
+    <input type="email" id="loginEmail" placeholder="Email" value="test@example.com">
+    <input type="password" id="loginPassword" placeholder="Password" value="123456">
+    <button onclick="login()">Sign In</button>
+    
+    <div class="result" id="result">Results will appear here...</div>
+    
+    <script>
+        async function signup() {
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '⏳ Creating account...';
+            resultDiv.className = 'result';
+            
+            try {
+                const response = await fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const data = await response.json();
+                resultDiv.innerHTML = JSON.stringify(data, null, 2);
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    alert('✅ Signup successful! You can now login.');
+                } else {
+                    resultDiv.className = 'result error';
+                }
+            } catch(error) {
+                resultDiv.innerHTML = '❌ Error: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '⏳ Logging in...';
+            resultDiv.className = 'result';
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+                resultDiv.innerHTML = JSON.stringify(data, null, 2);
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    alert('✅ Login successful! Welcome ' + data.user.name);
+                } else {
+                    resultDiv.className = 'result error';
+                }
+            } catch(error) {
+                resultDiv.innerHTML = '❌ Error: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+    </script>
+</body>
+</html>

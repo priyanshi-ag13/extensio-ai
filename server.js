@@ -24,6 +24,9 @@ app.use(express.static('public'));  // Serve static files (HTML, CSS, JS)
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
+const authRoutes = require('./backend/routes/auth');
+app.use('/api/auth', authRoutes);
+
 // Make downloads folder accessible for download
 app.use('/downloads', express.static(path.join(__dirname, 'downloads')));
 
