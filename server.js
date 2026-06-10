@@ -7,6 +7,7 @@ const fs = require('fs');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const connectDB = require('./backend/db');
 const cookieParser = require('cookie-parser');
+const extensionRoutes = require('./backend/routes/extensions');
 
 require('dotenv').config();
 
@@ -26,6 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const authRoutes = require('./backend/routes/auth');
 app.use('/api/auth', authRoutes);
+app.use('/api/extensions', extensionRoutes);
 
 // Make downloads folder accessible for download
 app.use('/downloads', express.static(path.join(__dirname, 'downloads')));
