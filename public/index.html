@@ -14,6 +14,12 @@
     <div class="container">
         <!-- Header Section -->
         <header>
+            <nav class="main-nav" style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+    <div></div>
+    <div class="auth-links" style="display: flex; gap: 15px;">
+        <!-- Will be populated by JavaScript -->
+    </div>
+</nav>
             <div class="logo">
                 <span class="logo-icon">🤖</span>
                 <span class="logo-text">Extensio<span class="highlight">.ai</span></span>
@@ -57,17 +63,22 @@
                     <p>Your Chrome extension is ready to download and install.</p>
                     
                     <div class="download-card">
-                        <div class="download-info">
-                            <span class="download-icon">📦</span>
-                            <div class="download-details">
-                                <strong>Extension Package</strong>
-                                <span>Ready to install in Chrome</span>
-                            </div>
-                        </div>
-                        <button id="downloadBtn" class="download-btn">
-                            ⬇️ Download ZIP
-                        </button>
-                    </div>
+    <div class="download-info">
+        <span class="download-icon">📦</span>
+        <div class="download-details">
+            <strong>Extension Package</strong>
+            <span>Ready to install in Chrome</span>
+        </div>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <button id="saveToLibraryBtn" class="save-library-btn" style="background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer;">
+            💾 Save to My Library
+        </button>
+        <button id="downloadBtn" class="download-btn">
+            ⬇️ Download ZIP
+        </button>
+    </div>
+</div>
 
                     <div class="install-instructions">
                         <h3>📖 How to Install</h3>

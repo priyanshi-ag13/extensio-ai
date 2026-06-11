@@ -102,10 +102,11 @@ app.post('/api/generate', async (req, res) => {
         
         // Send response with download link
         res.json({
-            success: true,
-            downloadUrl: `/downloads/${zipFileName}`,
-            message: 'Extension generated successfully!'
-        });
+    success: true,
+    downloadUrl: `/downloads/${zipFileName}`,
+    files: extensionCode,  // This is new!
+    message: 'Extension generated successfully!'
+});
         
     } catch (error) {
         console.error('❌ Error:', error.message);
