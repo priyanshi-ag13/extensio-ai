@@ -478,3 +478,162 @@ body {
     transition: opacity 0.3s;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
+/* Updated meta section */
+.extension-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    color: #999;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.extension-updated {
+    font-size: 0.7rem;
+    color: #999;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #f0f0f0;
+}
+
+/* Regenerate button */
+.regenerate-card-btn {
+    background: #fef3c7;
+    color: #d97706;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.regenerate-card-btn:hover {
+    background: #fde68a;
+    transform: translateY(-2px);
+}
+
+/* Action buttons container - updated for 3 buttons */
+.extension-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.extension-actions button {
+    flex: 1;
+    font-size: 0.8rem;
+    padding: 8px;
+}
+/* Version History Modal */
+.version-modal {
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.version-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.version-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    transition: all 0.3s;
+}
+
+.version-item:hover {
+    background: #f0f0f0;
+}
+
+.version-item.current {
+    background: #e0e7ff;
+    border-left: 4px solid #667eea;
+}
+
+.version-number {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.version-date {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.version-badge {
+    background: #22c55e;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+}
+
+.restore-version-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background 0.3s;
+}
+
+.restore-version-btn:hover {
+    background: #5a67d8;
+}
+
+.loading-spinner-small {
+    text-align: center;
+    padding: 20px;
+}
+
+.loading-spinner-small .spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #f0f0f0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+.history-card-btn {
+    background: #e0e7ff;
+    color: #667eea;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.history-card-btn:hover {
+    background: #c7d2fe;
+    transform: translateY(-2px);
+}

@@ -190,6 +190,15 @@ function createExtensionCard(extension) {
 
 // Attach event listeners to download, delete, and regenerate buttons
 function attachCardEventListeners() {
+    // History buttons
+document.querySelectorAll('.history-card-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        showVersionHistory(id, name);
+    });
+});
     // Download buttons
     document.querySelectorAll('.download-card-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -202,7 +211,9 @@ function attachCardEventListeners() {
             }
         });
     });
-    
+    <button class="history-card-btn" data-id="${extension.id}" data-name="${escapeHtml(extension.name)}">
+    📜 History
+</button>
     // Delete buttons
     document.querySelectorAll('.delete-card-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -544,3 +555,108 @@ function generateExtensionName(prompt) {
     }
     return name;
 }
+// Show version history modal
+async function showVersionHistory(extensionId, extensionName) {
+    console.log(`📜 Showing version history for: ${extensionName}`);
+    
+    const modal = document.getElementById('versionModal');
+    const body = document.getElementById('versionHistoryBody');
+    
+    // Show modal with loading state
+    modal.style.display = 'flex';
+    body.innerHTML = '<div class="loading-spinner-small"><div class="spinner"></div><p>Loading version history...</p></div>';
+    
+    try {
+        const response = await fetch(`/api/extensions/${extensionId}/history`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayVersionHistory(data, extensionId, extensionName);
+        } else {
+            body.innerHTML = `<div class="error-state"><p>❌ ${data.error}</p></div>`;
+        }
+    } catch (error) {
+        console.error('Error loading version history:', error);
+        body.innerHTML = '<div class="error-state"><p>❌ Failed to load version history</p></div>';
+    }
+}
+
+// Display version history in modal
+function displayVersionHistory(data, extensionId, extensionName) {
+    const body = document.getElementById('versionHistoryBody');
+    
+    if (!data.history || data.history.length === 0) {
+        body.innerHTML = `
+            <div class="empty-state">
+                <p>No version history yet. Generate updates to see previous versions!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const historyHtml = `
+        <div class="version-list">
+            <div class="version-item current">
+                <div>
+                    <div class="version-number">Version ${data.currentVersion}</div>
+                    <div class="version-date">Current version</div>
+                </div>
+                <span class="version-badge">Current</span>
+            </div>
+            ${data.history.map(v => `
+                <div class="version-item">
+                    <div>
+                        <div class="version-number">Version ${v.version}</div>
+                        <div class="version-date">${new Date(v.createdAt).toLocaleString()}</div>
+                    </div>
+                    <button class="restore-version-btn" onclick="restoreVersion('${extensionId}', ${v.version})">
+                        🔄 Restore
+                    </button>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    
+    body.innerHTML = historyHtml;
+}
+
+// Restore a specific version
+async function restoreVersion(extensionId, versionNumber) {
+    console.log(`🔄 Restoring version ${versionNumber} for extension ${extensionId}`);
+    
+    // Close modal
+    closeVersionModal();
+    
+    // Show restoring toast
+    showToast(`⏳ Restoring version ${versionNumber}...`, 'info');
+    
+    try {
+        const response = await fetch(`/api/extensions/${extensionId}/restore/${versionNumber}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast(`✅ Restored to version ${versionNumber}!`, 'success');
+            // Reload extensions to show restored version
+            await loadExtensions();
+        } else {
+            throw new Error(data.error);
+        }
+    } catch (error) {
+        console.error('Restore error:', error);
+        showToast(`❌ Failed to restore: ${error.message}`, 'error');
+    }
+}
+
+// Close version modal
+function closeVersionModal() {
+    document.getElementById('versionModal').style.display = 'none';
+}
+
+// Add a "View History" button to extension card
+// Update the createExtensionCard function to include history button

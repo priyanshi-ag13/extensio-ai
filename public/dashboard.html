@@ -106,5 +106,17 @@
     </div>
 
     <script src="/dashboard.js"></script>
+    <!-- Version History Modal -->
+<div id="versionModal" class="modal" style="display: none;">
+    <div class="modal-content version-modal">
+        <div class="modal-header">
+            <h3>📜 Version History</h3>
+            <button class="modal-close" onclick="closeVersionModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="versionHistoryBody">
+            <div class="loading-spinner-small">Loading version history...</div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
