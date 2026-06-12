@@ -178,6 +178,23 @@ async function generateExtension() {
         hideLoading();
     }
 }
+// Auto-save prompt after successful generation
+async function promptSaveToLibrary() {
+    if (!isLoggedIn) {
+        const shouldLogin = confirm('Want to save this extension to your library? Login or Sign up to save!');
+        if (shouldLogin) {
+            window.location.href = '/test-auth.html';
+        }
+        return;
+    }
+    
+    const shouldSave = confirm('Save this extension to your library for future access?');
+    if (shouldSave) {
+        await saveToLibrary();
+    }
+}
+
+// Call this after successful generation (in the success section)
 
 // Generate a name from the prompt
 function generateExtensionName(prompt) {

@@ -12,6 +12,15 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+    <div class="dashboard-header-row">
+    <div class="dashboard-header">
+        <h1>📁 My Extension Library</h1>
+        <p>All your generated extensions in one place. Click any extension to download again!</p>
+    </div>
+    <button class="refresh-btn" onclick="loadExtensions()">
+        🔄 Refresh
+    </button>
+</div>
     <div class="dashboard-container">
         <!-- Navigation Bar -->
         <nav class="dashboard-nav">
@@ -32,7 +41,9 @@
                 <h1>📁 My Extension Library</h1>
                 <p>All your generated extensions in one place. Click any extension to download again!</p>
             </div>
-
+            <div class="connection-status" id="connectionStatus" style="text-align: right; font-size: 0.8rem; margin-bottom: 10px;">
+    🟢 Connected
+</div>
             <!-- User Info Section -->
             <div class="user-info" id="userInfo">
                 <div class="user-avatar">👤</div>
