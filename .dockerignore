@@ -1,0 +1,39 @@
+# .dockerignore - Files to exclude from Docker image
+# Day 8 - Commit 21
+
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Git
+.git/
+.gitignore
+
+# Temporary files
+temp/
+downloads/*.zip
+*.zip
+
+# Generated extension folders
+generated-extension-*/
+
+# VS Code
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Test files
+test/
+*.test.js

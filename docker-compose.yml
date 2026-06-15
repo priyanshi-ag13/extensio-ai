@@ -1,0 +1,63 @@
+# docker-compose.yml for Extensio.ai
+# Day 8 - Commit 21: Multi-container orchestration
+
+version: '3.8'
+
+services:
+  # MongoDB Database Service
+  mongodb:
+    image: mongo:7
+    container_name: extensio-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: extensio_ai
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - extensio-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Extensio.ai Application Service
+  app:
+    build: .
+    container_name: extensio-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      MONGODB_URI: mongodb://admin:admin123@mongodb:27017/extensio_ai?authSource=admin
+      JWT_SECRET: ${JWT_SECRET:-extensio_production_secret_key_2024}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - ./downloads:/app/downloads
+      - ./temp:/app/temp
+    networks:
+      - extensio-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => {r.statusCode === 200 ? process.exit(0) : process.exit(1)})"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+# Volumes for persistent data
+volumes:
+  mongodb_data:
+    driver: local
+
+# Networks for communication
+networks:
+  extensio-network:
+    driver: bridge

@@ -1,30 +1,29 @@
-# Dockerfile for Extensio.ai
-# Day 8 - Commit 20: Containerizing the application
+# Dockerfile for Extensio.ai - Simplified for Docker Compose
+# Day 8 - Commit 21
 
-# Use official Node.js image (lightweight Alpine version)
 FROM node:18-alpine
 
-# Set working directory inside container
+# Set working directory
 WORKDIR /app
 
-# Copy package.json files first (for better caching)
+# Copy package files
 COPY package*.json ./
 
 # Install dependencies
 RUN npm install --production
 
-# Copy all application code
+# Copy application code
 COPY . .
 
 # Create necessary directories
 RUN mkdir -p downloads temp
 
-# Expose port 3000
+# Expose port
 EXPOSE 3000
 
-# Health check to monitor if app is running
+# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {r.statusCode === 200 ? process.exit(0) : process.exit(1)})"
 
 # Start the application
-CMD ["node", "server.js"]
+CMD ["node", "server.js"] 

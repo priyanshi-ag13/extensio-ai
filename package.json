@@ -23,3 +23,12 @@
     "nodemon": "^3.1.0"
   }
 }
+"scripts": {
+  "start": "node server.js",
+  "dev": "nodemon server.js",
+  "docker:build": "docker build -t extensio-ai .",
+  "docker:run": "docker run -p 3000:3000 --env-file .env extensio-ai",
+  "docker:compose-up": "docker-compose up -d",
+  "docker:compose-down": "docker-compose down",
+  "docker:compose-logs": "docker-compose logs -f"
+}

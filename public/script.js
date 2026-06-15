@@ -426,3 +426,52 @@ document.addEventListener('DOMContentLoaded', async () => {
     addExampleButtons();
     setTimeout(checkServerHealth, 1000);
 });
+// ========== CONNECTION STATUS ==========
+// Add connection status indicator to homepage
+
+function addConnectionStatus() {
+    // Create status element
+    const statusDiv = document.createElement('div');
+    statusDiv.id = 'connectionStatus';
+    statusDiv.style.cssText = `
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-family: monospace;
+        z-index: 999;
+        background: rgba(0,0,0,0.7);
+        color: white;
+    `;
+    statusDiv.innerHTML = '🟡 Connecting...';
+    document.body.appendChild(statusDiv);
+    
+    // Check connection
+    async function checkConnection() {
+        try {
+            const response = await fetch('/api/health');
+            if (response.ok) {
+                statusDiv.innerHTML = '🟢 Server Connected';
+                statusDiv.style.background = 'rgba(34,197,94,0.8)';
+            } else {
+                statusDiv.innerHTML = '🔴 Server Error';
+                statusDiv.style.background = 'rgba(239,68,68,0.8)';
+            }
+        } catch (error) {
+            statusDiv.innerHTML = '🔴 Disconnected';
+            statusDiv.style.background = 'rgba(239,68,68,0.8)';
+        }
+    }
+    
+    checkConnection();
+    setInterval(checkConnection, 30000); // Check every 30 seconds
+}
+
+// Call this when page loads
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', addConnectionStatus);
+} else {
+    addConnectionStatus();
+}
