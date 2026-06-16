@@ -680,3 +680,79 @@ body {
     flex-wrap: wrap;
     gap: 15px;
 }
+/* ========== DARK MODE DASHBOARD ========== */
+body.dark-mode .dashboard-container {
+    background: var(--bg-primary);
+}
+
+body.dark-mode .dashboard-main {
+    background: var(--bg-primary);
+}
+
+body.dark-mode .extension-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+}
+
+body.dark-mode .extension-name {
+    color: var(--text-primary);
+}
+
+body.dark-mode .extension-prompt {
+    color: var(--text-secondary);
+}
+
+body.dark-mode .extension-meta {
+    color: var(--text-muted);
+    border-bottom-color: var(--border-color);
+}
+
+body.dark-mode .extension-version {
+    background: var(--bg-input);
+}
+
+body.dark-mode .stat-number {
+    -webkit-text-fill-color: var(--text-primary);
+}
+
+body.dark-mode .modal-content {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+body.dark-mode .modal-header {
+    border-bottom-color: var(--border-color);
+}
+
+body.dark-mode .modal-footer {
+    border-top-color: var(--border-color);
+}
+
+body.dark-mode .btn-cancel {
+    background: var(--bg-input);
+    color: var(--text-primary);
+}
+
+body.dark-mode .empty-state {
+    background: var(--bg-card);
+}
+
+body.dark-mode .empty-state p {
+    color: var(--text-secondary);
+}
+
+body.dark-mode .loading-spinner {
+    background: var(--bg-card);
+}
+
+body.dark-mode .error-state {
+    background: var(--bg-card);
+}
+
+body.dark-mode .error-state h3 {
+    color: var(--text-primary);
+}
+
+body.dark-mode .error-state p {
+    color: var(--text-secondary);
+}

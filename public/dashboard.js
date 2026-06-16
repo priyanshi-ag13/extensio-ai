@@ -526,3 +526,79 @@ async function checkConnection() {
 
 // Check connection every 30 seconds
 setInterval(checkConnection, 30000);
+// ========== DARK MODE TOGGLE ==========
+// Dark mode functionality
+
+function initDarkMode() {
+    const toggleBtn = document.getElementById('themeToggle');
+    if (!toggleBtn) return;
+    
+    // Check saved preference
+    const savedTheme = localStorage.getItem('extensio-theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        toggleBtn.classList.add('dark');
+        toggleBtn.querySelector('.toggle-icon').textContent = '☀️';
+        toggleBtn.querySelector('.toggle-label').textContent = 'Light Mode';
+    }
+    
+    // Toggle on click
+    toggleBtn.addEventListener('click', function() {
+        document.body.classList.toggle('dark-mode');
+        this.classList.toggle('dark');
+        
+        const isDark = document.body.classList.contains('dark-mode');
+        const icon = this.querySelector('.toggle-icon');
+        const label = this.querySelector('.toggle-label');
+        
+        if (isDark) {
+            icon.textContent = '☀️';
+            label.textContent = 'Light Mode';
+            localStorage.setItem('extensio-theme', 'dark');
+        } else {
+            icon.textContent = '🌙';
+            label.textContent = 'Dark Mode';
+            localStorage.setItem('extensio-theme', 'light');
+        }
+    });
+}
+
+// Initialize dark mode when page loads
+document.addEventListener('DOMContentLoaded', initDarkMode);
+// ========== DARK MODE TOGGLE ==========
+// Reuse same dark mode logic for dashboard
+
+function initDarkMode() {
+    const toggleBtn = document.getElementById('themeToggle');
+    if (!toggleBtn) return;
+    
+    const savedTheme = localStorage.getItem('extensio-theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        toggleBtn.classList.add('dark');
+        toggleBtn.querySelector('.toggle-icon').textContent = '☀️';
+        toggleBtn.querySelector('.toggle-label').textContent = 'Light Mode';
+    }
+    
+    toggleBtn.addEventListener('click', function() {
+        document.body.classList.toggle('dark-mode');
+        this.classList.toggle('dark');
+        
+        const isDark = document.body.classList.contains('dark-mode');
+        const icon = this.querySelector('.toggle-icon');
+        const label = this.querySelector('.toggle-label');
+        
+        if (isDark) {
+            icon.textContent = '☀️';
+            label.textContent = 'Light Mode';
+            localStorage.setItem('extensio-theme', 'dark');
+        } else {
+            icon.textContent = '🌙';
+            label.textContent = 'Dark Mode';
+            localStorage.setItem('extensio-theme', 'light');
+        }
+    });
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', initDarkMode);
