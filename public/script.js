@@ -426,6 +426,50 @@ document.addEventListener('DOMContentLoaded', async () => {
     addExampleButtons();
     setTimeout(checkServerHealth, 1000);
 });
+// ========== DARK MODE TOGGLE ==========
+function initDarkMode() {
+    const toggleBtn = document.getElementById('themeToggle');
+    if (!toggleBtn) {
+        console.log('Toggle button not found');
+        return;
+    }
+    
+    console.log('Dark mode toggle found!');
+    
+    // Check saved preference
+    const savedTheme = localStorage.getItem('extensio-theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        toggleBtn.classList.add('dark');
+        const icon = toggleBtn.querySelector('.toggle-icon');
+        const label = toggleBtn.querySelector('.toggle-label');
+        if (icon) icon.textContent = '☀️';
+        if (label) label.textContent = 'Light Mode';
+    }
+    
+    // Toggle on click
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('Toggle clicked!');
+        
+        document.body.classList.toggle('dark-mode');
+        this.classList.toggle('dark');
+        
+        const isDark = document.body.classList.contains('dark-mode');
+        const icon = this.querySelector('.toggle-icon');
+        const label = this.querySelector('.toggle-label');
+        
+        if (isDark) {
+            if (icon) icon.textContent = '☀️';
+            if (label) label.textContent = 'Light Mode';
+            localStorage.setItem('extensio-theme', 'dark');
+        } else {
+            if (icon) icon.textContent = '🌙';
+            if (label) label.textContent = 'Dark Mode';
+            localStorage.setItem('extensio-theme', 'light');
+        }
+    });
+}
 // ========== CONNECTION STATUS ==========
 // Add connection status indicator to homepage
 
@@ -468,6 +512,57 @@ function addConnectionStatus() {
     checkConnection();
     setInterval(checkConnection, 30000); // Check every 30 seconds
 }
+// ========== DARK MODE TOGGLE ==========
+function initDarkMode() {
+    const toggleBtn = document.getElementById('themeToggle');
+    if (!toggleBtn) {
+        console.log('Toggle button not found');
+        return;
+    }
+    
+    console.log('Dark mode toggle found!');
+    
+    const savedTheme = localStorage.getItem('extensio-theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        toggleBtn.classList.add('dark');
+        const icon = toggleBtn.querySelector('.toggle-icon');
+        const label = toggleBtn.querySelector('.toggle-label');
+        if (icon) icon.textContent = '☀️';
+        if (label) label.textContent = 'Light Mode';
+    }
+    
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('Toggle clicked!');
+        
+        document.body.classList.toggle('dark-mode');
+        this.classList.toggle('dark');
+        
+        const isDark = document.body.classList.contains('dark-mode');
+        const icon = this.querySelector('.toggle-icon');
+        const label = this.querySelector('.toggle-label');
+        
+        if (isDark) {
+            if (icon) icon.textContent = '☀️';
+            if (label) label.textContent = 'Light Mode';
+            localStorage.setItem('extensio-theme', 'dark');
+        } else {
+            if (icon) icon.textContent = '🌙';
+            if (label) label.textContent = 'Dark Mode';
+            localStorage.setItem('extensio-theme', 'light');
+        }
+    });
+}
+
+// Initialize everything on page load
+document.addEventListener('DOMContentLoaded', async () => {
+    await checkAuthStatus();
+    addExampleButtons();
+    initDarkMode();  // ADD THIS LINE!
+    addConnectionStatus();  // ADD THIS LINE!
+    setTimeout(checkServerHealth, 1000);
+});
 
 // Call this when page loads
 if (document.readyState === 'loading') {
