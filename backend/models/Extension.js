@@ -1,44 +1,20 @@
 // backend/models/Extension.js
-// Extension model - with version history tracking
-// Day 7 - Commit 18: Version history support
+// Extension model - FIXED VERSION (No middleware issues)
+// Day 9 - Commit 27: Fixed save extension error
 
 const mongoose = require('mongoose');
 
-const versionHistorySchema = new mongoose.Schema({
-    version: {
-        type: Number,
-        required: true
-    },
-    files: {
-        type: Object,
-        required: true
-    },
-    downloadUrl: {
-        type: String,
-        required: true
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
-});
-
 const extensionSchema = new mongoose.Schema({
-    // Which user owns this extension
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
-    
-    // The user's original prompt/description
     prompt: {
         type: String,
         required: true,
         trim: true
     },
-    
-    // Name of the extension (auto-generated or user-provided)
     name: {
         type: String,
         required: true,
@@ -47,65 +23,36 @@ const extensionSchema = new mongoose.Schema({
             return this.prompt.substring(0, 40) + '...';
         }
     },
-    
-    // The generated code files (current version)
     files: {
         type: Object,
         required: true
     },
-    
-    // Download URL for the current ZIP file
     downloadUrl: {
         type: String,
         required: true
     },
-    
-    // Version history
-    versionHistory: [versionHistorySchema],
-    
-    // Current version number
-    version: {
-        type: Number,
-        default: 1
-    },
-    
-    // When it was created
     createdAt: {
         type: Date,
         default: Date.now
     },
-    
-    // When it was last updated
     updatedAt: {
         type: Date,
         default: Date.now
+    },
+    version: {
+        type: Number,
+        default: 1
+    },
+    versionHistory: {
+        type: Array,
+        default: []
     }
 });
 
-// Update the updatedAt timestamp before saving
-extensionSchema.pre('save', function(next) {
-    this.updatedAt = Date.now();
-    next();
-});
+// FIXED: Remove the problematic pre-save middleware
+// Instead, we'll handle updatedAt manually in routes
 
-// Method to add new version to history
-extensionSchema.methods.addVersionToHistory = async function(files, downloadUrl) {
-    this.versionHistory.push({
-        version: this.version,
-        files: this.files,
-        downloadUrl: this.downloadUrl,
-        createdAt: this.updatedAt
-    });
-    
-    // Limit history to last 10 versions
-    if (this.versionHistory.length > 10) {
-        this.versionHistory.shift();
-    }
-    
-    await this.save();
-};
-
-// Method to get public info (without sensitive data)
+// Method to get public info
 extensionSchema.methods.getPublicInfo = function() {
     return {
         id: this._id,
@@ -115,17 +62,45 @@ extensionSchema.methods.getPublicInfo = function() {
         createdAt: this.createdAt,
         updatedAt: this.updatedAt,
         version: this.version,
-        hasHistory: this.versionHistory.length > 0
+        hasHistory: this.versionHistory && this.versionHistory.length > 0
     };
 };
 
-// Method to get full version history
+// Method to get version history
 extensionSchema.methods.getVersionHistory = function() {
+    if (!this.versionHistory) return [];
     return this.versionHistory.map(v => ({
         version: v.version,
         downloadUrl: v.downloadUrl,
         createdAt: v.createdAt
     }));
+};
+
+// Method to add version to history
+extensionSchema.methods.addVersionToHistory = async function(files, downloadUrl) {
+    if (!this.versionHistory) {
+        this.versionHistory = [];
+    }
+    
+    this.versionHistory.push({
+        version: this.version,
+        files: this.files,
+        downloadUrl: this.downloadUrl,
+        createdAt: this.updatedAt || new Date()
+    });
+    
+    // Keep only last 10 versions
+    if (this.versionHistory.length > 10) {
+        this.versionHistory.shift();
+    }
+    
+    // Update to new version
+    this.files = files || this.files;
+    this.downloadUrl = downloadUrl || this.downloadUrl;
+    this.version += 1;
+    this.updatedAt = new Date();
+    
+    await this.save();
 };
 
 module.exports = mongoose.model('Extension', extensionSchema);

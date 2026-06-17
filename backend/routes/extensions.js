@@ -38,6 +38,7 @@ router.post('/save', authMiddleware, async (req, res) => {
     try {
         const { prompt, name, files, downloadUrl } = req.body;
         
+        // Validation
         if (!prompt || !files || !downloadUrl) {
             return res.status(400).json({ 
                 success: false, 
@@ -45,15 +46,21 @@ router.post('/save', authMiddleware, async (req, res) => {
             });
         }
         
-        const extension = await Extension.create({
+        // Create extension record - WITHOUT using pre-save middleware
+        const extension = new Extension({
             user: req.userId,
             prompt: prompt,
             name: name || prompt.substring(0, 40),
             files: files,
             downloadUrl: downloadUrl,
+            createdAt: new Date(),
+            updatedAt: new Date(),
             version: 1,
             versionHistory: []
         });
+        
+        // Save directly
+        await extension.save();
         
         console.log('✅ Extension saved! ID:', extension._id);
         
@@ -71,7 +78,6 @@ router.post('/save', authMiddleware, async (req, res) => {
         });
     }
 });
-
 // GET ALL EXTENSIONS
 router.get('/my-extensions', authMiddleware, async (req, res) => {
     console.log('\n📋 Fetching extensions for user:', req.userId);
@@ -151,15 +157,12 @@ router.put('/:id', authMiddleware, async (req, res) => {
             });
         }
         
-        // Save current version to history before updating
-        await extension.addVersionToHistory(extension.files, extension.downloadUrl);
+        // Save current version to history
+        await extension.addVersionToHistory(files, downloadUrl);
         
-        // Update to new version
-        if (files) extension.files = files;
-        if (downloadUrl) extension.downloadUrl = downloadUrl;
+        // Update fields
         if (name) extension.name = name;
-        extension.version += 1;
-        extension.updatedAt = Date.now();
+        extension.updatedAt = new Date();
         
         await extension.save();
         
