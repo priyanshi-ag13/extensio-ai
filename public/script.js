@@ -636,45 +636,134 @@ if (data.success) {
     generatePreview(prompt);  // Add this line
 }
 // ========== SHARE EXTENSION ==========
-async function shareExtension() {
+function shareExtension() {
+    console.log('📤 Share button clicked!');
+     currentGeneration = {
+        prompt: prompt,
+        name: generateExtensionName(prompt) || 'My Extension',
+        files: data.files || null,
+        downloadUrl: data.downloadUrl
+    };
+    showResult();
+    
+    // Check if we have data to share
+    if (!currentGeneration || !currentGeneration.prompt) {
+        alert('Please generate an extension first before sharing!');
+        return;
+    }
+    
+    // Create share data
     const shareData = {
         prompt: currentGeneration.prompt,
-        name: currentGeneration.name,
-        downloadUrl: currentGeneration.downloadUrl
+        name: currentGeneration.name || 'My Extension',
+        downloadUrl: currentGeneration.downloadUrl || ''
     };
     
-    // Create a shareable link
-    const shareUrl = window.location.origin + '/?share=' + btoa(JSON.stringify(shareData));
+    // Create shareable link (base64 encoded)
+    const encodedData = btoa(JSON.stringify(shareData));
+    const shareUrl = window.location.origin + '/?share=' + encodedData;
     
-    // Show modal with link
+    // Show modal
+    showShareModal(shareUrl);
+}
+
+function showShareModal(shareUrl) {
+    // Remove existing modal if any
+    const existingModal = document.querySelector('.share-modal-overlay');
+    if (existingModal) existingModal.remove();
+    
+    // Create modal
     const modal = document.createElement('div');
-    modal.className = 'share-modal';
+    modal.className = 'share-modal-overlay';
     modal.id = 'shareModal';
     modal.innerHTML = `
-        <div class="share-modal-content">
+        <div class="share-modal">
             <h3>📤 Share This Extension</h3>
-            <p>Copy this link to share with others:</p>
-            <input type="text" class="share-link-input" id="shareLink" value="${shareUrl}" readonly>
-            <button class="share-copy-btn" onclick="copyShareLink()">📋 Copy Link</button>
-            <button style="margin-top: 10px; background: none; border: none; color: var(--text-muted); cursor: pointer;" onclick="closeShareModal()">Close</button>
+            <p>Copy the link below to share this extension with others!</p>
+            <div class="share-link-container">
+                <input type="text" class="share-link-input" id="shareLinkInput" value="${shareUrl}" readonly>
+                <button class="copy-link-btn" onclick="copyShareLink()">📋 Copy</button>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="share-modal-close" onclick="closeShareModal()">Close</button>
+            </div>
         </div>
     `;
     document.body.appendChild(modal);
+    
+    // Auto-select text on click
+    const input = document.getElementById('shareLinkInput');
+    if (input) {
+        input.addEventListener('click', function() {
+            this.select();
+        });
+    }
 }
 
 function copyShareLink() {
-    const input = document.getElementById('shareLink');
+    const input = document.getElementById('shareLinkInput');
+    if (!input) return;
+    
     input.select();
-    document.execCommand('copy');
-    alert('✅ Link copied to clipboard!');
+    input.setSelectionRange(0, 99999);
+    
+    try {
+        document.execCommand('copy');
+        // Show feedback
+        const copyBtn = document.querySelector('.copy-link-btn');
+        if (copyBtn) {
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = '✅ Copied!';
+            setTimeout(() => {
+                copyBtn.textContent = originalText;
+            }, 2000);
+        }
+    } catch (err) {
+        alert('Failed to copy. Please select and copy manually.');
+    }
 }
 
 function closeShareModal() {
-    const modal = document.getElementById('shareModal');
+    const modal = document.querySelector('.share-modal-overlay');
     if (modal) modal.remove();
 }
 
-// Make functions global
+// Make functions globally accessible
 window.shareExtension = shareExtension;
 window.copyShareLink = copyShareLink;
 window.closeShareModal = closeShareModal;
+
+// ========== HANDLE SHARE LINK ON PAGE LOAD ==========
+function handleSharedExtension() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const shareData = urlParams.get('share');
+    
+    if (shareData) {
+        try {
+            const decoded = JSON.parse(atob(shareData));
+            console.log('📥 Shared extension loaded:', decoded);
+            
+            // Fill the prompt
+            const promptInput = document.getElementById('prompt');
+            if (promptInput && decoded.prompt) {
+                promptInput.value = decoded.prompt;
+                // Auto-generate
+                setTimeout(() => {
+                    const generateBtn = document.getElementById('generateBtn');
+                    if (generateBtn) generateBtn.click();
+                }, 500);
+            }
+            
+            // Show notification
+            showToast('📥 Shared extension loaded! Generating...', 'info');
+        } catch (error) {
+            console.error('Failed to parse share data:', error);
+        }
+    }
+}
+
+// Call this on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // ... existing code ...
+    handleSharedExtension();
+});
