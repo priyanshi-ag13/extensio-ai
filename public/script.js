@@ -635,3 +635,46 @@ if (data.success) {
     // ... existing code ...
     generatePreview(prompt);  // Add this line
 }
+// ========== SHARE EXTENSION ==========
+async function shareExtension() {
+    const shareData = {
+        prompt: currentGeneration.prompt,
+        name: currentGeneration.name,
+        downloadUrl: currentGeneration.downloadUrl
+    };
+    
+    // Create a shareable link
+    const shareUrl = window.location.origin + '/?share=' + btoa(JSON.stringify(shareData));
+    
+    // Show modal with link
+    const modal = document.createElement('div');
+    modal.className = 'share-modal';
+    modal.id = 'shareModal';
+    modal.innerHTML = `
+        <div class="share-modal-content">
+            <h3>📤 Share This Extension</h3>
+            <p>Copy this link to share with others:</p>
+            <input type="text" class="share-link-input" id="shareLink" value="${shareUrl}" readonly>
+            <button class="share-copy-btn" onclick="copyShareLink()">📋 Copy Link</button>
+            <button style="margin-top: 10px; background: none; border: none; color: var(--text-muted); cursor: pointer;" onclick="closeShareModal()">Close</button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function copyShareLink() {
+    const input = document.getElementById('shareLink');
+    input.select();
+    document.execCommand('copy');
+    alert('✅ Link copied to clipboard!');
+}
+
+function closeShareModal() {
+    const modal = document.getElementById('shareModal');
+    if (modal) modal.remove();
+}
+
+// Make functions global
+window.shareExtension = shareExtension;
+window.copyShareLink = copyShareLink;
+window.closeShareModal = closeShareModal;
