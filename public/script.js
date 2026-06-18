@@ -600,3 +600,38 @@ window.useTemplate = function(templateId) {
         }, 300);
     }
 };
+// ========== PREVIEW GENERATION ==========
+async function generatePreview(prompt) {
+    const previewSection = document.getElementById('previewSection');
+    const previewContent = document.getElementById('previewContent');
+    
+    if (!previewSection || !previewContent) return;
+    
+    previewSection.classList.remove('hidden');
+    previewContent.innerHTML = `<div class="preview-loading">⏳ Generating preview...</div>`;
+    
+    try {
+        const response = await fetch('/api/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            previewContent.innerHTML = `
+                <div class="preview-badge">✨ AI Preview</div>
+                <p>${data.preview}</p>
+            `;
+        } else {
+            previewContent.innerHTML = `<p style="color: var(--error);">⚠️ ${data.error}</p>`;
+        }
+    } catch (error) {
+        previewContent.innerHTML = `<p style="color: var(--error);">⚠️ Failed to generate preview</p>`;
+    }
+}
+if (data.success) {
+    // ... existing code ...
+    generatePreview(prompt);  // Add this line
+}

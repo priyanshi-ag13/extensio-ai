@@ -773,3 +773,41 @@ button:focus-visible, input:focus-visible, select:focus-visible {
         font-size: 2rem;
     }
 }
+/* ========== PREVIEW SECTION ========== */
+.preview-section {
+    margin-top: 20px;
+    padding: 20px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+}
+
+.preview-section h3 {
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+.preview-content {
+    background: var(--bg-primary);
+    padding: 16px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.preview-loading {
+    color: var(--text-muted);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.preview-badge {
+    display: inline-block;
+    background: #22c55e;
+    color: white;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    margin-bottom: 8px;
+}

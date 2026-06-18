@@ -208,3 +208,43 @@ app.listen(PORT, () => {
     ╚═══════════════════════════════════════════════════════╝
     `);
 });
+// ========== PREVIEW ENDPOINT ==========
+app.post('/api/preview', async (req, res) => {
+    console.log('\n📸 Generating preview...');
+    
+    const { prompt } = req.body;
+    
+    if (!prompt) {
+        return res.status(400).json({ error: 'Prompt is required' });
+    }
+    
+    try {
+        const myApiKey = process.env.GEMINI_API_KEY;
+        const { GoogleGenerativeAI } = require("@google/generative-ai");
+        const aiClient = new GoogleGenerativeAI(myApiKey);
+        
+        const previewPrompt = `Based on this description: "${prompt}"
+        Generate a brief preview description of what this Chrome extension would look like and how it would work. 
+        Include: 
+        1. What the extension does (1 sentence)
+        2. How the user interacts with it (1 sentence)
+        3. What the user sees (1 sentence)
+        Keep it under 100 words.`;
+        
+        const aiModel = aiClient.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const result = await aiModel.generateContent(previewPrompt);
+        const previewText = result.response.text();
+        
+        res.json({
+            success: true,
+            preview: previewText
+        });
+        
+    } catch (error) {
+        console.error('❌ Preview error:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
