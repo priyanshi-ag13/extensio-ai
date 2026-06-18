@@ -562,6 +562,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     initDarkMode();  // ADD THIS LINE!
     addConnectionStatus();  // ADD THIS LINE!
     setTimeout(checkServerHealth, 1000);
+     if (typeof renderTemplates === 'function') {
+        renderTemplates();
+    } else {
+        console.warn('⚠️ renderTemplates not available');
+    }
 });
 
 // Call this when page loads
@@ -570,3 +575,28 @@ if (document.readyState === 'loading') {
 } else {
     addConnectionStatus();
 }
+// ========== TEMPLATE FUNCTIONS ==========
+function useTemplate(templateId) {
+    // This function is already defined in templates.js
+    // But we need to ensure it works with our generate function
+    console.log('📋 Using template:', templateId);
+}
+
+// Override the global useTemplate to work with our app
+window.useTemplate = function(templateId) {
+    const templates = window.EXTENSION_TEMPLATES || [];
+    const template = templates.find(t => t.id === templateId);
+    if (!template) return;
+    
+    const promptInput = document.getElementById('prompt');
+    if (promptInput) {
+        promptInput.value = template.prompt;
+        // Auto-generate after a small delay
+        setTimeout(() => {
+            const generateBtn = document.getElementById('generateBtn');
+            if (generateBtn) {
+                generateBtn.click();
+            }
+        }, 300);
+    }
+};

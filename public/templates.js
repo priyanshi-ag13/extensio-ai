@@ -50,7 +50,12 @@ const EXTENSION_TEMPLATES = [
 // Function to render templates in UI
 function renderTemplates() {
     const container = document.getElementById('templatesContainer');
-    if (!container) return;
+    if (!container) {
+        console.log('⚠️ templatesContainer not found in HTML');
+        return;
+    }
+    
+    console.log('✅ Rendering templates...');
     
     container.innerHTML = EXTENSION_TEMPLATES.map(template => `
         <div class="template-card" data-id="${template.id}" data-prompt="${escapeHtml(template.prompt)}">
@@ -61,7 +66,7 @@ function renderTemplates() {
         </div>
     `).join('');
     
-    // Add event listeners
+    // Add event listeners to cards
     document.querySelectorAll('.template-card').forEach(card => {
         card.addEventListener('click', function(e) {
             // Don't trigger if clicking the button (handled separately)
@@ -77,38 +82,57 @@ function renderTemplates() {
             });
         }
     });
+    
+    console.log('✅ Templates rendered successfully!');
 }
 
 // Function to use a template
 function useTemplate(templateId) {
+    console.log('📋 Using template:', templateId);
+    
     const template = EXTENSION_TEMPLATES.find(t => t.id === templateId);
-    if (!template) return;
+    if (!template) {
+        console.error('❌ Template not found:', templateId);
+        return;
+    }
     
     // Fill the prompt input
     const promptInput = document.getElementById('prompt');
     if (promptInput) {
         promptInput.value = template.prompt;
-        // Trigger the generate function
-        const generateBtn = document.getElementById('generateBtn');
-        if (generateBtn) {
-            generateBtn.click();
-        }
+        console.log('✅ Prompt filled:', template.prompt.substring(0, 50) + '...');
+        
+        // Auto-generate after a small delay
+        setTimeout(() => {
+            const generateBtn = document.getElementById('generateBtn');
+            if (generateBtn) {
+                console.log('🚀 Auto-generating from template...');
+                generateBtn.click();
+            } else {
+                console.warn('⚠️ Generate button not found');
+            }
+        }, 500);
+    } else {
+        console.error('❌ Prompt input not found');
     }
     
     // Scroll to prompt
     if (promptInput) {
-        promptInput.scrollIntoView({ behavior: 'smooth' });
+        promptInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 }
 
 // Helper function to escape HTML
 function escapeHtml(text) {
+    if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
 
-// Export for use in other files
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { EXTENSION_TEMPLATES, renderTemplates, useTemplate };
-}
+// Make available globally
+window.EXTENSION_TEMPLATES = EXTENSION_TEMPLATES;
+window.useTemplate = useTemplate;
+window.renderTemplates = renderTemplates;
+
+console.log('✅ templates.js loaded successfully!');
