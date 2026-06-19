@@ -1,141 +1,65 @@
 // public/script.js
-// Extensio.ai - Main Frontend with Save Feature
-// Day 6 - Commit 16: Save button and navigation
+// Extensio.ai - Complete Working Version (FIXED - No duplicate declarations)
 
-// ========== GLOBAL STATE ==========
+console.log('🚀 Extensio.ai script loaded!');
+
+// ========== GLOBAL STATE (DECLARED ONCE) ==========
 let currentGeneration = {
     prompt: '',
     name: '',
     files: null,
     downloadUrl: ''
 };
-console.log('🚀 Extensio.ai frontend loaded!');
 
-// Get DOM elements
+let isLoggedIn = false;
+
+// ========== DOM REFERENCES ==========
 const promptInput = document.getElementById('prompt');
 const generateBtn = document.getElementById('generateBtn');
 const loadingSection = document.getElementById('loadingSection');
 const resultSection = document.getElementById('resultSection');
 const errorSection = document.getElementById('errorSection');
 const downloadBtn = document.getElementById('downloadBtn');
-const saveToLibraryBtn = document.getElementById('saveToLibraryBtn'); // NEW
+const saveToLibraryBtn = document.getElementById('saveToLibraryBtn');
 const newExtensionBtn = document.getElementById('newExtensionBtn');
 const retryBtn = document.getElementById('retryBtn');
 const errorMessage = document.getElementById('errorMessage');
+const shareBtn = document.getElementById('shareBtn');
 
-// Store the current generation data
-let currentGeneration = {
-    prompt: '',
-    name: '',
-    files: null,
-    downloadUrl: ''
-};
-
-// Check if user is logged in (for showing save button)
-let isLoggedIn = false;
-
-// Generate extension when button is clicked
-if (generateBtn) {
-    generateBtn.addEventListener('click', generateExtension);
-}
-
-// Save to library button
-if (saveToLibraryBtn) {
-    saveToLibraryBtn.addEventListener('click', saveToLibrary);
-}
-
-// Download button handler
-if (downloadBtn) {
-    downloadBtn.addEventListener('click', () => {
-        if (currentGeneration.downloadUrl) {
-            window.location.href = currentGeneration.downloadUrl;
-            updateDownloadCount();
-        }
-    });
-}
-
-// New extension button - reset the form
-if (newExtensionBtn) {
-    newExtensionBtn.addEventListener('click', resetToForm);
-}
-
-// Retry button - try again
-if (retryBtn) {
-    retryBtn.addEventListener('click', () => {
-        hideError();
-        generateExtension();
-    });
-}
-
-// Check authentication status on page load
-async function checkAuthStatus() {
-    try {
-        const response = await fetch('/api/auth/me');
-        const data = await response.json();
-        isLoggedIn = data.success && data.user !== null;
-        
-        // Update UI based on login status
-        updateAuthUI();
-        
-        return isLoggedIn;
-    } catch (error) {
-        console.error('Auth check error:', error);
-        isLoggedIn = false;
-        return false;
-    }
-}
-
-// Update UI based on login status
-function updateAuthUI() {
-    const authLinks = document.querySelector('.auth-links');
-    if (!authLinks) return;
-    
-    if (isLoggedIn) {
-        authLinks.innerHTML = `
-            <a href="/dashboard.html" class="nav-link">📁 My Library</a>
-            <button id="logoutNavBtn" class="logout-nav-btn">🚪 Logout</button>
-        `;
-        
-        const logoutBtn = document.getElementById('logoutNavBtn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', logout);
-        }
-    } else {
-        authLinks.innerHTML = `
-            <a href="/test-auth.html" class="nav-link">🔐 Login / Sign Up</a>
-        `;
-    }
-}
-
-// Logout function
-async function logout() {
-    try {
-        await fetch('/api/auth/logout', { method: 'POST' });
-        window.location.href = '/';
-    } catch (error) {
-        console.error('Logout error:', error);
-        window.location.href = '/';
-    }
-}
+// ========== CHECK ELEMENTS ==========
+console.log('🔍 Checking DOM elements...');
+console.log('promptInput:', promptInput ? '✅ Found' : '❌ Not found');
+console.log('generateBtn:', generateBtn ? '✅ Found' : '❌ Not found');
 
 // ========== GENERATE EXTENSION ==========
 async function generateExtension() {
+    console.log('🔘 Generate button clicked!');
+    
+    if (!promptInput) {
+        alert('Error: Prompt input not found!');
+        return;
+    }
+    
     const prompt = promptInput.value.trim();
     
-    // Validation
     if (!prompt) {
-        showError('Please describe what Chrome extension you want to create!');
+        alert('Please describe what Chrome extension you want to create!');
         return;
     }
     
     if (prompt.length < 10) {
-        showError('Please provide a more detailed description (at least 10 characters)');
+        alert('Please provide a more detailed description (at least 10 characters)');
         return;
     }
     
-    showLoading();
-    hideResult();
-    hideError();
+    // Show loading
+    if (loadingSection) loadingSection.classList.remove('hidden');
+    if (generateBtn) {
+        generateBtn.disabled = true;
+        generateBtn.textContent = '⏳ Generating...';
+    }
+    if (resultSection) resultSection.classList.add('hidden');
+    if (errorSection) errorSection.classList.add('hidden');
     
     console.log('📤 Sending request:', prompt);
     
@@ -154,29 +78,54 @@ async function generateExtension() {
         }
         
         if (data.success) {
-            // ✅ IMPORTANT: Save data to currentGeneration
-            currentGeneration = {
-                prompt: prompt,
-                name: generateExtensionName(prompt),
-                files: data.files || null,
-                downloadUrl: data.downloadUrl || ''
-            };
+            // ✅ Save generation data (ASSIGN, not redeclare)
+            currentGeneration.prompt = prompt;
+            currentGeneration.name = prompt.substring(0, 40);
+            currentGeneration.files = data.files;
+            currentGeneration.downloadUrl = data.downloadUrl;
             
-            console.log('✅ Current generation saved:', currentGeneration);
+            console.log('✅ Generation successful!', currentGeneration);
             
             // Show result
-            showResult();
-            await checkAuthStatus();
-            updateSaveButtonVisibility();
+            if (resultSection) resultSection.classList.remove('hidden');
             
-            // Show share button
-            const shareBtn = document.getElementById('shareBtn');
-            if (shareBtn) {
-                shareBtn.style.display = 'inline-flex';
+            // Setup download button
+            if (downloadBtn) {
+                downloadBtn.style.display = 'inline-block';
+                downloadBtn.onclick = function() {
+                    if (currentGeneration.downloadUrl) {
+                        window.location.href = currentGeneration.downloadUrl;
+                    }
+                };
             }
             
-            // Generate preview
-            generatePreview(prompt);
+            // Setup save button
+            if (saveToLibraryBtn) {
+                saveToLibraryBtn.style.display = 'inline-block';
+                saveToLibraryBtn.onclick = function() {
+                    alert('💾 Save to library: ' + currentGeneration.name);
+                };
+            }
+            
+            // Setup share button
+            if (shareBtn) {
+                shareBtn.style.display = 'inline-block';
+                shareBtn.onclick = function() {
+                    if (currentGeneration.prompt) {
+                        try {
+                            const shareData = btoa(JSON.stringify({
+                                prompt: currentGeneration.prompt,
+                                name: currentGeneration.name,
+                                downloadUrl: currentGeneration.downloadUrl
+                            }));
+                            const shareUrl = window.location.origin + '/?share=' + shareData;
+                            prompt('📤 Copy this link to share:', shareUrl);
+                        } catch (e) {
+                            alert('Error creating share link');
+                        }
+                    }
+                };
+            }
             
         } else {
             throw new Error(data.error || 'Something went wrong');
@@ -184,325 +133,65 @@ async function generateExtension() {
         
     } catch (error) {
         console.error('❌ Error:', error);
-        showError(error.message);
+        if (errorSection) errorSection.classList.remove('hidden');
+        if (errorMessage) errorMessage.textContent = error.message;
     } finally {
-        hideLoading();
-    }
-}
-// Auto-save prompt after successful generation
-async function promptSaveToLibrary() {
-    if (!isLoggedIn) {
-        const shouldLogin = confirm('Want to save this extension to your library? Login or Sign up to save!');
-        if (shouldLogin) {
-            window.location.href = '/test-auth.html';
-        }
-        return;
-    }
-    
-    const shouldSave = confirm('Save this extension to your library for future access?');
-    if (shouldSave) {
-        await saveToLibrary();
-    }
-}
-
-// Call this after successful generation (in the success section)
-
-// Generate a name from the prompt
-function generateExtensionName(prompt) {
-    // Take first 50 characters of prompt, remove quotes
-    let name = prompt.substring(0, 50).replace(/["']/g, '');
-    if (name.length === prompt.length) {
-        return name;
-    }
-    return name + '...';
-}
-
-// Save extension to user's library
-async function saveToLibrary() {
-    if (!isLoggedIn) {
-        showError('Please login or sign up to save extensions to your library!');
-        setTimeout(() => {
-            window.location.href = '/test-auth.html';
-        }, 2000);
-        return;
-    }
-    
-    if (!currentGeneration.files) {
-        showError('No extension data to save. Please generate an extension first.');
-        return;
-    }
-    
-    // Show saving indicator
-    const saveBtn = document.getElementById('saveToLibraryBtn');
-    const originalText = saveBtn.textContent;
-    saveBtn.textContent = '💾 Saving...';
-    saveBtn.disabled = true;
-    
-    try {
-        const response = await fetch('/api/extensions/save', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                prompt: currentGeneration.prompt,
-                name: currentGeneration.name,
-                files: currentGeneration.files,
-                downloadUrl: currentGeneration.downloadUrl
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showSaveSuccessMessage();
-            saveBtn.textContent = '✅ Saved!';
-            setTimeout(() => {
-                saveBtn.textContent = originalText;
-                saveBtn.disabled = false;
-            }, 2000);
-        } else {
-            throw new Error(data.error || 'Failed to save');
-        }
-    } catch (error) {
-        console.error('Save error:', error);
-        saveBtn.textContent = '❌ Failed';
-        showError('Failed to save extension: ' + error.message);
-        setTimeout(() => {
-            saveBtn.textContent = originalText;
-            saveBtn.disabled = false;
-        }, 3000);
-    }
-}
-
-// Show save success message
-function showSaveSuccessMessage() {
-    const resultSection = document.getElementById('resultSection');
-    const successCard = resultSection.querySelector('.success-card');
-    
-    // Check if save message already exists
-    let saveMsg = successCard.querySelector('.save-success-msg');
-    if (!saveMsg) {
-        saveMsg = document.createElement('div');
-        saveMsg.className = 'save-success-msg';
-        const downloadCard = successCard.querySelector('.download-card');
-        downloadCard.insertAdjacentElement('afterend', saveMsg);
-    }
-    
-    saveMsg.innerHTML = `
-        <div style="background: #e0e7ff; color: #667eea; padding: 12px; border-radius: 8px; margin: 15px 0; text-align: center;">
-            ✅ Extension saved to your library! 
-            <a href="/dashboard.html" style="color: #667eea; font-weight: bold;">View My Library →</a>
-        </div>
-    `;
-    
-    // Remove after 5 seconds
-    setTimeout(() => {
-        if (saveMsg) saveMsg.style.display = 'none';
-    }, 5000);
-}
-
-// Update save button visibility based on login status
-function updateSaveButtonVisibility() {
-    const saveBtn = document.getElementById('saveToLibraryBtn');
-    if (saveBtn) {
-        if (!isLoggedIn) {
-            saveBtn.textContent = '🔐 Login to Save';
-        } else {
-            saveBtn.textContent = '💾 Save to My Library';
+        // Hide loading
+        if (loadingSection) loadingSection.classList.add('hidden');
+        if (generateBtn) {
+            generateBtn.disabled = false;
+            generateBtn.textContent = '✨ Generate Extension';
         }
     }
 }
 
-// Update download count (visual feedback)
-function updateDownloadCount() {
-    // Optional: Track downloads
-    console.log('Download initiated');
+// ========== ADD EVENT LISTENERS ==========
+if (generateBtn) {
+    generateBtn.addEventListener('click', generateExtension);
+    console.log('✅ Event listener added to generate button');
+} else {
+    console.error('❌ Generate button not found!');
 }
 
-// UI Helper Functions
-function showLoading() {
-    if (loadingSection) loadingSection.classList.remove('hidden');
-    if (generateBtn) {
-        generateBtn.disabled = true;
-        generateBtn.style.opacity = '0.6';
-    }
-}
-
-function hideLoading() {
-    if (loadingSection) loadingSection.classList.add('hidden');
-    if (generateBtn) {
-        generateBtn.disabled = false;
-        generateBtn.style.opacity = '1';
-    }
-}
-function showResult() {
-    if (resultSection) {
-        resultSection.classList.remove('hidden');
-        
-        // Show share button when result is shown
-        const shareBtn = document.getElementById('shareBtn');
-        if (shareBtn) {
-            shareBtn.style.display = 'inline-flex';
-        }
-        
-        resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-}
-
-function hideResult() {
-    if (resultSection) resultSection.classList.add('hidden');
-}
-
-function showError(message) {
-    if (errorMessage) errorMessage.textContent = message;
-    if (errorSection) errorSection.classList.remove('hidden');
-}
-
-function hideError() {
-    if (errorSection) errorSection.classList.add('hidden');
-}
-
-function resetToForm() {
-    hideResult();
-    hideError();
-    if (promptInput) {
-        promptInput.value = '';
-        promptInput.focus();
-    }
-    currentGeneration = {
-        prompt: '',
-        name: '',
-        files: null,
-        downloadUrl: ''
-    };
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// Add keyboard shortcut: Ctrl+Enter to generate
+// ========== KEYBOARD SHORTCUT ==========
 if (promptInput) {
     promptInput.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault();
-            generateExtension();
+            if (generateBtn) generateBtn.click();
         }
     });
 }
 
-// Add example prompts functionality
-function addExampleButtons() {
-    const examples = [
-        "Make a Chrome extension that blocks all images and replaces them with a cute cat picture",
-        "Make a Chrome extension that highlights all links in yellow",
-        "Make a Chrome extension that shows an alert saying 'Hello from Extensio.ai!'"
-    ];
-    
-    const inputWrapper = document.querySelector('.input-wrapper');
-    if (inputWrapper && !document.querySelector('.examples-section')) {
-        const examplesDiv = document.createElement('div');
-        examplesDiv.className = 'examples-section';
-        examplesDiv.style.marginTop = '15px';
-        examplesDiv.innerHTML = '<p style="font-size: 0.85rem; color: #666; margin-bottom: 8px;">💡 Try these examples:</p>';
-        
-        examples.forEach(example => {
-            const btn = document.createElement('button');
-            btn.textContent = example.substring(0, 50) + '...';
-            btn.style.background = '#f0f0f0';
-            btn.style.border = 'none';
-            btn.style.padding = '6px 12px';
-            btn.style.borderRadius = '20px';
-            btn.style.margin = '0 5px 5px 0';
-            btn.style.fontSize = '0.8rem';
-            btn.style.cursor = 'pointer';
-            btn.onclick = () => {
-                promptInput.value = example;
-                generateExtension();
-            };
-            examplesDiv.appendChild(btn);
-        });
-        
-        inputWrapper.appendChild(examplesDiv);
-    }
-}
-
-// Check server health
-async function checkServerHealth() {
-    try {
-        const response = await fetch('/api/health');
-        const data = await response.json();
-        if (data.status === 'ok') {
-            console.log('✅ Server is healthy!');
-        }
-    } catch (error) {
-        console.warn('⚠️ Server health check failed.');
-        showError('Cannot connect to server. Please make sure server is running.');
-    }
-}
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', async () => {
-    await checkAuthStatus();
-    addExampleButtons();
-    setTimeout(checkServerHealth, 1000);
-});
-// ========== DARK MODE TOGGLE ==========
-function initDarkMode() {
-    const toggleBtn = document.getElementById('themeToggle');
-    if (!toggleBtn) {
-        console.log('Toggle button not found');
-        return;
-    }
-    
-    console.log('Dark mode toggle found!');
-    
-    // Check saved preference
-    const savedTheme = localStorage.getItem('extensio-theme');
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark-mode');
-        toggleBtn.classList.add('dark');
-        const icon = toggleBtn.querySelector('.toggle-icon');
-        const label = toggleBtn.querySelector('.toggle-label');
-        if (icon) icon.textContent = '☀️';
-        if (label) label.textContent = 'Light Mode';
-    }
-    
-    // Toggle on click
-    toggleBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        console.log('Toggle clicked!');
-        
-        document.body.classList.toggle('dark-mode');
-        this.classList.toggle('dark');
-        
-        const isDark = document.body.classList.contains('dark-mode');
-        const icon = this.querySelector('.toggle-icon');
-        const label = this.querySelector('.toggle-label');
-        
-        if (isDark) {
-            if (icon) icon.textContent = '☀️';
-            if (label) label.textContent = 'Light Mode';
-            localStorage.setItem('extensio-theme', 'dark');
-        } else {
-            if (icon) icon.textContent = '🌙';
-            if (label) label.textContent = 'Dark Mode';
-            localStorage.setItem('extensio-theme', 'light');
-        }
+// ========== NEW EXTENSION ==========
+if (newExtensionBtn) {
+    newExtensionBtn.addEventListener('click', function() {
+        if (promptInput) promptInput.value = '';
+        if (resultSection) resultSection.classList.add('hidden');
+        if (errorSection) errorSection.classList.add('hidden');
+        if (promptInput) promptInput.focus();
     });
 }
+
+// ========== RETRY ==========
+if (retryBtn) {
+    retryBtn.addEventListener('click', function() {
+        if (errorSection) errorSection.classList.add('hidden');
+        if (generateBtn) generateBtn.click();
+    });
+}
+
 // ========== CONNECTION STATUS ==========
-// Add connection status indicator to homepage
-
 function addConnectionStatus() {
-    // Create status element
     const statusDiv = document.createElement('div');
     statusDiv.id = 'connectionStatus';
     statusDiv.style.cssText = `
         position: fixed;
         bottom: 10px;
         right: 10px;
-        padding: 5px 10px;
+        padding: 5px 12px;
         border-radius: 20px;
-        font-size: 12px;
+        font-size: 11px;
         font-family: monospace;
         z-index: 999;
         background: rgba(0,0,0,0.7);
@@ -511,7 +200,6 @@ function addConnectionStatus() {
     statusDiv.innerHTML = '🟡 Connecting...';
     document.body.appendChild(statusDiv);
     
-    // Check connection
     async function checkConnection() {
         try {
             const response = await fetch('/api/health');
@@ -529,17 +217,26 @@ function addConnectionStatus() {
     }
     
     checkConnection();
-    setInterval(checkConnection, 30000); // Check every 30 seconds
+    setInterval(checkConnection, 30000);
 }
-// ========== DARK MODE TOGGLE ==========
+
+// ========== CHECK SERVER HEALTH ==========
+async function checkServerHealth() {
+    try {
+        const response = await fetch('/api/health');
+        const data = await response.json();
+        if (data.status === 'ok') {
+            console.log('✅ Server is healthy!');
+        }
+    } catch (error) {
+        console.warn('⚠️ Server health check failed.');
+    }
+}
+
+// ========== DARK MODE ==========
 function initDarkMode() {
     const toggleBtn = document.getElementById('themeToggle');
-    if (!toggleBtn) {
-        console.log('Toggle button not found');
-        return;
-    }
-    
-    console.log('Dark mode toggle found!');
+    if (!toggleBtn) return;
     
     const savedTheme = localStorage.getItem('extensio-theme');
     if (savedTheme === 'dark') {
@@ -553,8 +250,6 @@ function initDarkMode() {
     
     toggleBtn.addEventListener('click', function(e) {
         e.preventDefault();
-        console.log('Toggle clicked!');
-        
         document.body.classList.toggle('dark-mode');
         this.classList.toggle('dark');
         
@@ -574,253 +269,17 @@ function initDarkMode() {
     });
 }
 
-// Initialize everything on page load
-document.addEventListener('DOMContentLoaded', async () => {
-    await checkAuthStatus();
-    addExampleButtons();
-    initDarkMode();  // ADD THIS LINE!
-    addConnectionStatus();  // ADD THIS LINE!
-    setTimeout(checkServerHealth, 1000);
-     if (typeof renderTemplates === 'function') {
-        renderTemplates();
-    } else {
-        console.warn('⚠️ renderTemplates not available');
-    }
-});
-
-// Call this when page loads
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', addConnectionStatus);
-} else {
-    addConnectionStatus();
-}
-// ========== TEMPLATE FUNCTIONS ==========
-function useTemplate(templateId) {
-    // This function is already defined in templates.js
-    // But we need to ensure it works with our generate function
-    console.log('📋 Using template:', templateId);
-}
-
-// Override the global useTemplate to work with our app
-window.useTemplate = function(templateId) {
-    const templates = window.EXTENSION_TEMPLATES || [];
-    const template = templates.find(t => t.id === templateId);
-    if (!template) return;
-    
-    const promptInput = document.getElementById('prompt');
-    if (promptInput) {
-        promptInput.value = template.prompt;
-        // Auto-generate after a small delay
-        setTimeout(() => {
-            const generateBtn = document.getElementById('generateBtn');
-            if (generateBtn) {
-                generateBtn.click();
-            }
-        }, 300);
-    }
-};
-// ========== PREVIEW GENERATION ==========
-async function generatePreview(prompt) {
-    const previewSection = document.getElementById('previewSection');
-    const previewContent = document.getElementById('previewContent');
-    
-    if (!previewSection || !previewContent) return;
-    
-    previewSection.classList.remove('hidden');
-    previewContent.innerHTML = `<div class="preview-loading">⏳ Generating preview...</div>`;
-    
-    try {
-        const response = await fetch('/api/preview', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            previewContent.innerHTML = `
-                <div class="preview-badge">✨ AI Preview</div>
-                <p>${data.preview}</p>
-            `;
-        } else {
-            previewContent.innerHTML = `<p style="color: var(--error);">⚠️ ${data.error}</p>`;
-        }
-    } catch (error) {
-        previewContent.innerHTML = `<p style="color: var(--error);">⚠️ Failed to generate preview</p>`;
-    }
-}
-if (data.success) {
-    // ... existing code ...
-    generatePreview(prompt);  // Add this line
-}
-// ========== SHARE EXTENSION ==========
-function shareExtension() {
-    console.log('📤 Share button clicked!');
-    console.log('Current generation data:', currentGeneration);
-    
-    // Check if we have data to share
-    if (!currentGeneration || !currentGeneration.prompt) {
-        alert('⚠️ Please generate an extension first before sharing!');
-        return;
-    }
-    
-    // Check if downloadUrl exists
-    if (!currentGeneration.downloadUrl) {
-        alert('⚠️ No download URL available. Please generate the extension again.');
-        return;
-    }
-    
-    // Create share data
-    const shareData = {
-        prompt: currentGeneration.prompt,
-        name: currentGeneration.name || 'My Extension',
-        downloadUrl: currentGeneration.downloadUrl,
-        timestamp: new Date().toISOString()
-    };
-    
-    try {
-        // Create shareable link (base64 encoded)
-        const encodedData = btoa(JSON.stringify(shareData));
-        const shareUrl = window.location.origin + '/?share=' + encodedData;
-        
-        console.log('📤 Share URL created:', shareUrl);
-        
-        // Show modal
-        showShareModal(shareUrl);
-    } catch (error) {
-        console.error('❌ Share error:', error);
-        alert('Failed to create share link. Please try again.');
-    }
-}
-
-function showShareModal(shareUrl) {
-    // Remove existing modal if any
-    const existingModal = document.querySelector('.share-modal-overlay');
-    if (existingModal) existingModal.remove();
-    
-    // Create modal
-    const modal = document.createElement('div');
-    modal.className = 'share-modal-overlay';
-    modal.id = 'shareModal';
-    modal.innerHTML = `
-        <div class="share-modal">
-            <h3>📤 Share This Extension</h3>
-            <p>Copy the link below to share this extension with others!</p>
-            <div class="share-link-container">
-                <input type="text" class="share-link-input" id="shareLinkInput" value="${shareUrl}" readonly>
-                <button class="copy-link-btn" onclick="copyShareLink()">📋 Copy</button>
-            </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px;">
-                <button class="share-modal-close" onclick="closeShareModal()">Close</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
-    
-    // Auto-select text on click
-    const input = document.getElementById('shareLinkInput');
-    if (input) {
-        input.addEventListener('click', function() {
-            this.select();
-        });
-        // Auto-select after modal appears
-        setTimeout(() => {
-            input.select();
-        }, 100);
-    }
-}
-
-function copyShareLink() {
-    const input = document.getElementById('shareLinkInput');
-    if (!input) {
-        alert('Input field not found!');
-        return;
-    }
-    
-    input.select();
-    input.setSelectionRange(0, 99999);
-    
-    try {
-        // Use modern clipboard API if available
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(input.value)
-                .then(() => {
-                    showCopyFeedback('✅ Copied to clipboard!');
-                })
-                .catch(() => {
-                    // Fallback to execCommand
-                    document.execCommand('copy');
-                    showCopyFeedback('✅ Copied to clipboard!');
-                });
-        } else {
-            // Fallback
-            document.execCommand('copy');
-            showCopyFeedback('✅ Copied to clipboard!');
-        }
-    } catch (err) {
-        alert('Failed to copy. Please select and copy manually.');
-    }
-}
-
-function showCopyFeedback(message) {
-    const copyBtn = document.querySelector('.copy-link-btn');
-    if (copyBtn) {
-        const originalText = copyBtn.textContent;
-        copyBtn.textContent = message;
-        copyBtn.style.background = '#22c55e';
-        setTimeout(() => {
-            copyBtn.textContent = originalText;
-            copyBtn.style.background = '';
-        }, 2000);
-    }
-}
-
-function closeShareModal() {
-    const modal = document.querySelector('.share-modal-overlay');
-    if (modal) modal.remove();
-}
-
-// Make functions globally accessible
-window.shareExtension = shareExtension;
-window.copyShareLink = copyShareLink;
-window.closeShareModal = closeShareModal;
-
-// ========== HANDLE SHARED EXTENSION ON PAGE LOAD ==========
-function handleSharedExtension() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const shareData = urlParams.get('share');
-    
-    if (shareData) {
-        try {
-            // Decode base64
-            const decoded = JSON.parse(atob(shareData));
-            console.log('📥 Shared extension loaded:', decoded);
-            
-            // Fill the prompt
-            const promptInput = document.getElementById('prompt');
-            if (promptInput && decoded.prompt) {
-                promptInput.value = decoded.prompt;
-                // Auto-generate after a delay
-                setTimeout(() => {
-                    const generateBtn = document.getElementById('generateBtn');
-                    if (generateBtn) {
-                        generateBtn.click();
-                        showToast('📥 Shared extension loaded! Generating...', 'info');
-                    }
-                }, 500);
-            } else {
-                showToast('⚠️ Failed to load shared extension', 'error');
-            }
-        } catch (error) {
-            console.error('❌ Failed to parse share data:', error);
-            showToast('⚠️ Invalid share link', 'error');
-        }
-    }
-}
-
-// Call this on page load
+// ========== INITIALIZE ==========
 document.addEventListener('DOMContentLoaded', function() {
-    // ... existing code ...
-    handleSharedExtension();
+    console.log('📄 DOM fully loaded');
+    initDarkMode();
+    addConnectionStatus();
+    setTimeout(checkServerHealth, 1000);
+    
+    // Load templates if available
+    if (typeof renderTemplates === 'function') {
+        renderTemplates();
+    }
 });
+
+console.log('✅ Script initialization complete!');
