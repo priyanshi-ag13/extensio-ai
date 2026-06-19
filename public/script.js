@@ -2,6 +2,13 @@
 // Extensio.ai - Main Frontend with Save Feature
 // Day 6 - Commit 16: Save button and navigation
 
+// ========== GLOBAL STATE ==========
+let currentGeneration = {
+    prompt: '',
+    name: '',
+    files: null,
+    downloadUrl: ''
+};
 console.log('🚀 Extensio.ai frontend loaded!');
 
 // Get DOM elements
@@ -111,11 +118,11 @@ async function logout() {
     }
 }
 
-// Function to generate extension
+// ========== GENERATE EXTENSION ==========
 async function generateExtension() {
     const prompt = promptInput.value.trim();
     
-    // Validate input
+    // Validation
     if (!prompt) {
         showError('Please describe what Chrome extension you want to create!');
         return;
@@ -126,54 +133,58 @@ async function generateExtension() {
         return;
     }
     
-    // Show loading, hide other sections
     showLoading();
     hideResult();
     hideError();
     
-    console.log('📤 Sending request to server:', prompt);
+    console.log('📤 Sending request:', prompt);
     
     try {
         const response = await fetch('/api/generate', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ prompt: prompt })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
         });
         
         const data = await response.json();
-        console.log('📥 Received response:', data);
+        console.log('📥 Response:', data);
         
         if (!response.ok) {
-            throw new Error(data.error || 'Failed to generate extension');
+            throw new Error(data.error || 'Generation failed');
         }
         
         if (data.success) {
-            // Store current generation data
+            // ✅ IMPORTANT: Save data to currentGeneration
             currentGeneration = {
                 prompt: prompt,
                 name: generateExtensionName(prompt),
                 files: data.files || null,
-                downloadUrl: data.downloadUrl
+                downloadUrl: data.downloadUrl || ''
             };
             
-            // Show success message
-            showResult();
+            console.log('✅ Current generation saved:', currentGeneration);
             
-            // Check auth status to show/hide save button
+            // Show result
+            showResult();
             await checkAuthStatus();
             updateSaveButtonVisibility();
             
-            console.log('✅ Extension generated successfully!');
-            console.log('📦 Download URL:', currentGeneration.downloadUrl);
+            // Show share button
+            const shareBtn = document.getElementById('shareBtn');
+            if (shareBtn) {
+                shareBtn.style.display = 'inline-flex';
+            }
+            
+            // Generate preview
+            generatePreview(prompt);
+            
         } else {
             throw new Error(data.error || 'Something went wrong');
         }
         
     } catch (error) {
         console.error('❌ Error:', error);
-        showError(error.message || 'Failed to generate extension. Please check if the server is running.');
+        showError(error.message);
     } finally {
         hideLoading();
     }
@@ -325,10 +336,18 @@ function hideLoading() {
         generateBtn.style.opacity = '1';
     }
 }
-
 function showResult() {
-    if (resultSection) resultSection.classList.remove('hidden');
-    if (resultSection) resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (resultSection) {
+        resultSection.classList.remove('hidden');
+        
+        // Show share button when result is shown
+        const shareBtn = document.getElementById('shareBtn');
+        if (shareBtn) {
+            shareBtn.style.display = 'inline-flex';
+        }
+        
+        resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 }
 
 function hideResult() {
@@ -638,17 +657,17 @@ if (data.success) {
 // ========== SHARE EXTENSION ==========
 function shareExtension() {
     console.log('📤 Share button clicked!');
-     currentGeneration = {
-        prompt: prompt,
-        name: generateExtensionName(prompt) || 'My Extension',
-        files: data.files || null,
-        downloadUrl: data.downloadUrl
-    };
-    showResult();
+    console.log('Current generation data:', currentGeneration);
     
     // Check if we have data to share
     if (!currentGeneration || !currentGeneration.prompt) {
-        alert('Please generate an extension first before sharing!');
+        alert('⚠️ Please generate an extension first before sharing!');
+        return;
+    }
+    
+    // Check if downloadUrl exists
+    if (!currentGeneration.downloadUrl) {
+        alert('⚠️ No download URL available. Please generate the extension again.');
         return;
     }
     
@@ -656,15 +675,23 @@ function shareExtension() {
     const shareData = {
         prompt: currentGeneration.prompt,
         name: currentGeneration.name || 'My Extension',
-        downloadUrl: currentGeneration.downloadUrl || ''
+        downloadUrl: currentGeneration.downloadUrl,
+        timestamp: new Date().toISOString()
     };
     
-    // Create shareable link (base64 encoded)
-    const encodedData = btoa(JSON.stringify(shareData));
-    const shareUrl = window.location.origin + '/?share=' + encodedData;
-    
-    // Show modal
-    showShareModal(shareUrl);
+    try {
+        // Create shareable link (base64 encoded)
+        const encodedData = btoa(JSON.stringify(shareData));
+        const shareUrl = window.location.origin + '/?share=' + encodedData;
+        
+        console.log('📤 Share URL created:', shareUrl);
+        
+        // Show modal
+        showShareModal(shareUrl);
+    } catch (error) {
+        console.error('❌ Share error:', error);
+        alert('Failed to create share link. Please try again.');
+    }
 }
 
 function showShareModal(shareUrl) {
@@ -684,7 +711,7 @@ function showShareModal(shareUrl) {
                 <input type="text" class="share-link-input" id="shareLinkInput" value="${shareUrl}" readonly>
                 <button class="copy-link-btn" onclick="copyShareLink()">📋 Copy</button>
             </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px;">
                 <button class="share-modal-close" onclick="closeShareModal()">Close</button>
             </div>
         </div>
@@ -697,29 +724,55 @@ function showShareModal(shareUrl) {
         input.addEventListener('click', function() {
             this.select();
         });
+        // Auto-select after modal appears
+        setTimeout(() => {
+            input.select();
+        }, 100);
     }
 }
 
 function copyShareLink() {
     const input = document.getElementById('shareLinkInput');
-    if (!input) return;
+    if (!input) {
+        alert('Input field not found!');
+        return;
+    }
     
     input.select();
     input.setSelectionRange(0, 99999);
     
     try {
-        document.execCommand('copy');
-        // Show feedback
-        const copyBtn = document.querySelector('.copy-link-btn');
-        if (copyBtn) {
-            const originalText = copyBtn.textContent;
-            copyBtn.textContent = '✅ Copied!';
-            setTimeout(() => {
-                copyBtn.textContent = originalText;
-            }, 2000);
+        // Use modern clipboard API if available
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(input.value)
+                .then(() => {
+                    showCopyFeedback('✅ Copied to clipboard!');
+                })
+                .catch(() => {
+                    // Fallback to execCommand
+                    document.execCommand('copy');
+                    showCopyFeedback('✅ Copied to clipboard!');
+                });
+        } else {
+            // Fallback
+            document.execCommand('copy');
+            showCopyFeedback('✅ Copied to clipboard!');
         }
     } catch (err) {
         alert('Failed to copy. Please select and copy manually.');
+    }
+}
+
+function showCopyFeedback(message) {
+    const copyBtn = document.querySelector('.copy-link-btn');
+    if (copyBtn) {
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = message;
+        copyBtn.style.background = '#22c55e';
+        setTimeout(() => {
+            copyBtn.textContent = originalText;
+            copyBtn.style.background = '';
+        }, 2000);
     }
 }
 
@@ -733,13 +786,14 @@ window.shareExtension = shareExtension;
 window.copyShareLink = copyShareLink;
 window.closeShareModal = closeShareModal;
 
-// ========== HANDLE SHARE LINK ON PAGE LOAD ==========
+// ========== HANDLE SHARED EXTENSION ON PAGE LOAD ==========
 function handleSharedExtension() {
     const urlParams = new URLSearchParams(window.location.search);
     const shareData = urlParams.get('share');
     
     if (shareData) {
         try {
+            // Decode base64
             const decoded = JSON.parse(atob(shareData));
             console.log('📥 Shared extension loaded:', decoded);
             
@@ -747,17 +801,20 @@ function handleSharedExtension() {
             const promptInput = document.getElementById('prompt');
             if (promptInput && decoded.prompt) {
                 promptInput.value = decoded.prompt;
-                // Auto-generate
+                // Auto-generate after a delay
                 setTimeout(() => {
                     const generateBtn = document.getElementById('generateBtn');
-                    if (generateBtn) generateBtn.click();
+                    if (generateBtn) {
+                        generateBtn.click();
+                        showToast('📥 Shared extension loaded! Generating...', 'info');
+                    }
                 }, 500);
+            } else {
+                showToast('⚠️ Failed to load shared extension', 'error');
             }
-            
-            // Show notification
-            showToast('📥 Shared extension loaded! Generating...', 'info');
         } catch (error) {
-            console.error('Failed to parse share data:', error);
+            console.error('❌ Failed to parse share data:', error);
+            showToast('⚠️ Invalid share link', 'error');
         }
     }
 }
