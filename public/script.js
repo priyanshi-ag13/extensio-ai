@@ -78,70 +78,45 @@ async function generateExtension() {
         }
         
         if (data.success) {
-            // ✅ Save generation data (ASSIGN, not redeclare)
-            currentGeneration.prompt = prompt;
-            currentGeneration.name = prompt.substring(0, 40);
-            currentGeneration.files = data.files;
-            currentGeneration.downloadUrl = data.downloadUrl;
-            
-            console.log('✅ Generation successful!', currentGeneration);
-            
-            // Show result
-            if (resultSection) resultSection.classList.remove('hidden');
-            
-            // Setup download button
-            if (downloadBtn) {
-                downloadBtn.style.display = 'inline-block';
-                downloadBtn.onclick = function() {
-                    if (currentGeneration.downloadUrl) {
-                        window.location.href = currentGeneration.downloadUrl;
-                    }
-                };
+    // Save generation data
+    currentGeneration.prompt = prompt;
+    currentGeneration.name = prompt.substring(0, 40);
+    currentGeneration.files = data.files;
+    currentGeneration.downloadUrl = data.downloadUrl;
+    
+    console.log('✅ Generation successful!', currentGeneration);
+    
+    // Show result
+    if (resultSection) resultSection.classList.remove('hidden');
+    
+    // Show all action buttons
+    const actionButtons = document.querySelector('.action-buttons');
+    if (actionButtons) {
+        actionButtons.classList.add('show-buttons');
+    }
+    
+    // Setup download button
+    if (downloadBtn) {
+        downloadBtn.onclick = function() {
+            if (currentGeneration.downloadUrl) {
+                window.location.href = currentGeneration.downloadUrl;
             }
-            
-            // Setup save button
-            if (saveToLibraryBtn) {
-                saveToLibraryBtn.style.display = 'inline-block';
-                saveToLibraryBtn.onclick = function() {
-                    alert('💾 Save to library: ' + currentGeneration.name);
-                };
-            }
-            
-            // Setup share button
-            if (shareBtn) {
-                shareBtn.style.display = 'inline-block';
-                shareBtn.onclick = function() {
-                    if (currentGeneration.prompt) {
-                        try {
-                            const shareData = btoa(JSON.stringify({
-                                prompt: currentGeneration.prompt,
-                                name: currentGeneration.name,
-                                downloadUrl: currentGeneration.downloadUrl
-                            }));
-                            const shareUrl = window.location.origin + '/?share=' + shareData;
-                            prompt('📤 Copy this link to share:', shareUrl);
-                        } catch (e) {
-                            alert('Error creating share link');
-                        }
-                    }
-                };
-            }
-            
-        } else {
-            throw new Error(data.error || 'Something went wrong');
-        }
-        
-    } catch (error) {
-        console.error('❌ Error:', error);
-        if (errorSection) errorSection.classList.remove('hidden');
-        if (errorMessage) errorMessage.textContent = error.message;
-    } finally {
-        // Hide loading
-        if (loadingSection) loadingSection.classList.add('hidden');
-        if (generateBtn) {
-            generateBtn.disabled = false;
-            generateBtn.textContent = '✨ Generate Extension';
-        }
+        };
+    }
+    
+    // Setup save button
+    if (saveToLibraryBtn) {
+        saveToLibraryBtn.onclick = function() {
+            // Your save function here
+            alert('💾 Saved to library: ' + currentGeneration.name);
+        };
+    }
+    
+    // Setup share button
+    if (shareBtn) {
+        shareBtn.onclick = function() {
+            shareExtension();
+        };
     }
 }
 
@@ -283,3 +258,77 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 console.log('✅ Script initialization complete!');
+// ========== SHARE EXTENSION (ADDED AT END) ==========
+function shareExtension() {
+    console.log('📤 Share button clicked!');
+    
+    if (!currentGeneration || !currentGeneration.prompt) {
+        alert('⚠️ Please generate an extension first!');
+        return;
+    }
+    
+    try {
+        const shareData = btoa(JSON.stringify({
+            prompt: currentGeneration.prompt,
+            name: currentGeneration.name,
+            downloadUrl: currentGeneration.downloadUrl
+        }));
+        const shareUrl = window.location.origin + '/?share=' + shareData;
+        
+        const modal = document.createElement('div');
+        modal.className = 'share-modal-overlay';
+        modal.innerHTML = `
+            <div class="share-modal">
+                <h3>📤 Share This Extension</h3>
+                <p>Copy the link below to share with others!</p>
+                <div class="share-link-container">
+                    <input type="text" class="share-link-input" id="shareLinkInput" value="${shareUrl}" readonly>
+                    <button class="copy-link-btn" onclick="copyShareLink()">📋 Copy</button>
+                </div>
+                <button class="share-modal-close" onclick="closeShareModal()">Close</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        setTimeout(() => {
+            const input = document.getElementById('shareLinkInput');
+            if (input) input.select();
+        }, 100);
+    } catch (error) {
+        alert('Failed to create share link');
+    }
+}
+
+function copyShareLink() {
+    const input = document.getElementById('shareLinkInput');
+    if (!input) return;
+    
+    input.select();
+    try {
+        navigator.clipboard.writeText(input.value)
+            .then(() => {
+                const btn = document.querySelector('.copy-link-btn');
+                if (btn) {
+                    btn.textContent = '✅ Copied!';
+                    setTimeout(() => { btn.textContent = '📋 Copy'; }, 2000);
+                }
+            })
+            .catch(() => {
+                document.execCommand('copy');
+                alert('✅ Copied to clipboard!');
+            });
+    } catch (err) {
+        alert('Please copy manually: ' + input.value);
+    }
+}
+
+function closeShareModal() {
+    const modal = document.querySelector('.share-modal-overlay');
+    if (modal) modal.remove();
+}
+
+window.shareExtension = shareExtension;
+window.copyShareLink = copyShareLink;
+window.closeShareModal = closeShareModal;
+
+console.log('✅ Share functions loaded!');
