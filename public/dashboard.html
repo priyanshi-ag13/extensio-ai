@@ -1,112 +1,89 @@
 <!-- public/dashboard.html -->
-<!-- Extensio.ai - User Dashboard -->
-<!-- Day 6 - Commit 14: Dashboard Interface -->
+<!-- Extensio.ai - Professional Dashboard -->
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Extensions - Extensio.ai Dashboard</title>
-    <link rel="stylesheet" href="/dashboard.css">
+    <title>My Library - Extensio.ai</title>
     <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/dashboard.css">
 </head>
 <body>
-    <div class="dashboard-header-row">
-    <div class="dashboard-header">
-        <h1>📁 My Extension Library</h1>
-        <p>All your generated extensions in one place. Click any extension to download again!</p>
-    </div>
-    <button class="refresh-btn" onclick="loadExtensions()">
-        🔄 Refresh
-    </button>
-</div>
-    <div class="dashboard-container">
-        <!-- Navigation Bar -->
-        <nav class="dashboard-nav">
-            <div class="nav-brand">
-                <span class="logo-icon">🤖</span>
-                <span class="logo-text">Extensio<span class="highlight">.ai</span></span>
-            </div>
-            <div class="nav-links">
-                <a href="/" class="nav-link">🏠 Create New</a>
-                <a href="/dashboard.html" class="nav-link active">📁 My Extensions</a>
-                <button id="logoutBtn" class="logout-btn">🚪 Logout</button>
-            </div>
-        </nav>
-        <!-- Dark Mode Toggle for Dashboard -->
-<div class="theme-toggle-wrapper">
-    <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">
-        <span class="toggle-icon">🌙</span>
-        <span class="toggle-label">Dark Mode</span>
-    </button>
-</div>
+    <!-- Navigation -->
+    <nav class="dashboard-nav">
+        <div class="nav-brand">
+            <span>🤖 Extensio<span class="highlight">.ai</span></span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">🏠 Create New</a>
+            <a href="/dashboard.html" class="nav-link active">📁 My Library</a>
+            <button id="logoutBtn" class="logout-btn">🚪 Logout</button>
+        </div>
+    </nav>
 
-        <!-- Main Content -->
-        <main class="dashboard-main">
-            <div class="dashboard-header">
-                <h1>📁 My Extension Library</h1>
-                <p>All your generated extensions in one place. Click any extension to download again!</p>
-            </div>
-            <div class="connection-status" id="connectionStatus" style="text-align: right; font-size: 0.8rem; margin-bottom: 10px;">
-    🟢 Connected
-</div>
-            <!-- User Info Section -->
+    <!-- Main Content -->
+    <div class="dashboard-container">
+        <div class="dashboard-main">
+            
+            <!-- User Info -->
             <div class="user-info" id="userInfo">
                 <div class="user-avatar">👤</div>
                 <div class="user-details">
                     <h3 id="userName">Loading...</h3>
-                    <p id="userEmail">loading@email.com</p>
+                    <p id="userEmail">Loading...</p>
                 </div>
             </div>
 
-            <!-- Stats Section -->
-            <div class="stats-section">
-                <div class="stat-card">
+            <!-- Stats Row -->
+            <div class="stats-row">
+                <div class="stat-box">
                     <div class="stat-number" id="extensionCount">0</div>
-                    <div class="stat-label">Total Extensions</div>
+                    <div class="stat-label">Extensions</div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-box">
                     <div class="stat-number" id="downloadCount">0</div>
                     <div class="stat-label">Downloads</div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-box">
                     <div class="stat-number" id="memberSince">-</div>
                     <div class="stat-label">Member Since</div>
                 </div>
             </div>
 
-            <!-- Search Bar -->
-            <div class="search-section">
+            <!-- Search -->
+            <div class="search-bar">
                 <input type="text" id="searchInput" placeholder="🔍 Search your extensions..." class="search-input">
                 <select id="sortSelect" class="sort-select">
-                    <option value="newest">📅 Newest First</option>
-                    <option value="oldest">📅 Oldest First</option>
-                    <option value="az">🔤 A to Z</option>
-                    <option value="za">🔤 Z to A</option>
+                    <option value="newest">📅 Newest</option>
+                    <option value="oldest">📅 Oldest</option>
+                    <option value="az">🔤 A-Z</option>
                 </select>
+                <button onclick="loadExtensions()" class="refresh-btn">🔄 Refresh</button>
             </div>
 
             <!-- Extensions Grid -->
-            <div class="extensions-grid" id="extensionsGrid">
-                <div class="loading-spinner">
+            <div id="extensionsGrid" class="extensions-grid">
+                <div class="loading-state">
                     <div class="spinner"></div>
                     <p>Loading your extensions...</p>
                 </div>
             </div>
 
-            <!-- Empty State (hidden by default) -->
-            <div class="empty-state" id="emptyState" style="display: none;">
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state" style="display:none;">
                 <div class="empty-icon">📭</div>
                 <h2>No Extensions Yet</h2>
-                <p>You haven't saved any extensions. Go create your first one!</p>
-                <a href="/" class="create-btn">✨ Create Your First Extension</a>
+                <p>Generate your first Chrome extension and save it here!</p>
+                <a href="/" class="create-btn">✨ Create Now</a>
             </div>
-        </main>
+
+        </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div id="deleteModal" class="modal" style="display: none;">
+    <!-- Delete Modal -->
+    <div id="deleteModal" class="modal" style="display:none;">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>🗑️ Delete Extension</h3>
@@ -114,27 +91,15 @@
             </div>
             <div class="modal-body">
                 <p>Are you sure you want to delete "<span id="deleteExtensionName"></span>"?</p>
-                <p class="modal-warning">This action cannot be undone!</p>
+                <p class="modal-warning">This cannot be undone!</p>
             </div>
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-                <button class="btn-confirm" onclick="confirmDelete()">Delete Permanently</button>
+                <button class="btn-confirm" onclick="confirmDelete()">Delete</button>
             </div>
         </div>
     </div>
 
     <script src="/dashboard.js"></script>
-    <!-- Version History Modal -->
-<div id="versionModal" class="modal" style="display: none;">
-    <div class="modal-content version-modal">
-        <div class="modal-header">
-            <h3>📜 Version History</h3>
-            <button class="modal-close" onclick="closeVersionModal()">&times;</button>
-        </div>
-        <div class="modal-body" id="versionHistoryBody">
-            <div class="loading-spinner-small">Loading version history...</div>
-        </div>
-    </div>
-</div>
 </body>
 </html>
