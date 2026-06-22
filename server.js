@@ -7,6 +7,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const fs = require('fs');
 const archiver = require('archiver');
+const checkUsageLimit = require('./backend/middleware/usageCheck');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 require('dotenv').config();
 
@@ -35,7 +36,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/extensions', extensionRoutes);
 
 // ========== GENERATE ENDPOINT ==========
-app.post('/api/generate', async (req, res) => {
+app.post('/api/generate', checkUsageLimit, async (req, res) => {
     console.log('\n📨 Received generation request');
     
     const { prompt } = req.body;
@@ -46,6 +47,27 @@ app.post('/api/generate', async (req, res) => {
             error: 'Prompt is required' 
         });
     }
+    // In the /api/generate endpoint, add this after prompt validation
+
+// Check user's usage limit (if authenticated)
+if (req.userId) {
+    const User = require('./backend/models/User');
+    const user = await User.findById(req.userId);
+    
+    if (user) {
+        if (!user.canGenerate()) {
+            return res.status(403).json({
+                success: false,
+                error: 'Free trial limit reached. Subscribe to continue generating!',
+                limitReached: true,
+                redirectTo: '/pricing'
+            });
+        }
+        
+        // Increment usage after successful generation
+        await user.incrementGenerations();
+    }
+}
     
     console.log(`📝 Prompt: ${prompt.substring(0, 100)}...`);
     
@@ -170,7 +192,15 @@ app.get('/api/health', (req, res) => {
 app.get('/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
+// Also handle /dashboard.html
+app.get('/dashboard.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
 
+// ========== SERVE HOMEPAGE ==========
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 // ========== GLOBAL ERROR HANDLER ==========
 // 404 handler for undefined routes
 app.use((req, res) => {
