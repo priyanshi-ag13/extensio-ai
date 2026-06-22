@@ -1,6 +1,5 @@
 <!-- public/index.html -->
 <!-- Extensio.ai - No-Code Extension Factory -->
-<!-- Day 4 - Commit 9: Web Interface -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -10,25 +9,19 @@
     <title>Extensio.ai - Create Chrome Extensions with AI</title>
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="/dark-mode.css">
-    <script src="/templates.js"></script>
 </head>
 <body>
-    <div class="container">
-        <!-- Header Section -->
-        <header>
-            <!-- Dark Mode Toggle -->
-<div class="theme-toggle-wrapper">
-    <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">
-        <span class="toggle-icon">🌙</span>
-        <span class="toggle-label">Dark Mode</span>
-    </button>
-</div>
-            <nav class="main-nav" style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
-    <div></div>
-    <div class="auth-links" style="display: flex; gap: 15px;">
-        <!-- Will be populated by JavaScript -->
+    <!-- Dark Mode Toggle -->
+    <div class="theme-toggle-wrapper">
+        <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">
+            <span class="toggle-icon">🌙</span>
+            <span class="toggle-label">Dark Mode</span>
+        </button>
     </div>
-</nav>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
             <div class="logo">
                 <span class="logo-icon">🤖</span>
                 <span class="logo-text">Extensio<span class="highlight">.ai</span></span>
@@ -40,9 +33,7 @@
         <main>
             <!-- Input Section -->
             <div class="input-section">
-                <label for="prompt" class="input-label">
-                    What Chrome extension do you want to create?
-                </label>
+                <label for="prompt" class="input-label">What Chrome extension do you want to create?</label>
                 <div class="input-wrapper">
                     <textarea 
                         id="prompt" 
@@ -50,62 +41,41 @@
                         placeholder="Example: Make a Chrome extension that changes all images on a website to a smiley face emoji..."
                         rows="4"
                     >Make a Chrome extension that changes the background color of any webpage to a beautiful gradient blue</textarea>
-                    <!-- Templates Section -->
-<div class="templates-section">
-    <h3>🎯 Quick Start Templates</h3>
-    <p>Choose a template to get started instantly!</p>
-    <div class="templates-grid" id="templatesContainer">
-        <!-- Templates will be loaded here by JavaScript -->
-        <p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 20px;">
-            ⏳ Loading templates...
-        </p>
-    </div>
-</div>
-                    <button id="generateBtn" class="generate-btn">
-                        
-                        <span class="btn-icon">✨</span>
-                        Generate Extension
-                    </button>
+                    <button id="generateBtn" class="generate-btn">✨ Generate Extension</button>
+                    <div class="keyboard-hint">
+                        💡 Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to generate quickly
+                    </div>
                 </div>
             </div>
-            <!-- Preview Section (Hidden by default) -->
-<div id="previewSection" class="preview-section hidden">
-    <h3>📸 Extension Preview</h3>
-    <div id="previewContent" class="preview-content">
-        <div class="preview-loading">⏳ Generating preview...</div>
-    </div>
-</div>
 
-            <!-- Loading Section (Hidden by default) -->
+            <!-- Loading Section -->
             <div id="loadingSection" class="loading-section hidden">
                 <div class="spinner"></div>
                 <p class="loading-text">AI is creating your extension...</p>
                 <p class="loading-subtext">This usually takes 5-10 seconds</p>
             </div>
 
-            <!-- Result Section (Hidden by default) -->
+            <!-- Result Section -->
             <div id="resultSection" class="result-section hidden">
                 <div class="success-card">
                     <div class="success-icon">🎉</div>
                     <h2>Extension Generated Successfully!</h2>
-                    <p>Your Chrome ext<button id="shareBtn" class="share-btn" style="display: none;">
-    📤 Share Extension
-</button>ension is ready to download and install.</p>
+                    <p>Your Chrome extension is ready to download and install.</p>
                     
                     <div class="download-card">
-    <div class="download-info">
-        <span class="download-icon">📦</span>
-        <div class="download-details">
-            <strong>Extension Package</strong>
-            <span>Ready to install in Chrome</span>
-        </div>
-    </div>
-    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <button id="saveToLibraryBtn" class="save-library-btn">💾 Save to My Library</button>
-        <button id="shareBtn" class="share-btn" onclick="shareExtension()">📤 Share</button>
-        <button id="downloadBtn" class="download-btn">⬇️ Download ZIP</button>
-    </div>
-</div>
+                        <div class="download-info">
+                            <span class="download-icon">📦</span>
+                            <div class="download-details">
+                                <strong>Extension Package</strong>
+                                <span>Ready to install in Chrome</span>
+                            </div>
+                        </div>
+                        <div class="action-buttons">
+                            <button id="saveToLibraryBtn" class="save-library-btn">💾 Save to Library</button>
+                            <button id="shareBtn" class="share-btn">📤 Share</button>
+                            <button id="downloadBtn" class="download-btn">⬇️ Download ZIP</button>
+                        </div>
+                    </div>
 
                     <div class="install-instructions">
                         <h3>📖 How to Install</h3>
@@ -118,21 +88,36 @@
                         </ol>
                     </div>
 
-                    <button id="newExtensionBtn" class="new-btn">
-                        🔄 Create Another Extension
-                    </button>
+                    <button id="newExtensionBtn" class="new-btn">🔄 Create Another Extension</button>
                 </div>
             </div>
 
-            <!-- Error Section (Hidden by default) -->
+            <!-- Error Section -->
             <div id="errorSection" class="error-section hidden">
                 <div class="error-card">
                     <div class="error-icon">⚠️</div>
                     <h2>Something Went Wrong</h2>
                     <p id="errorMessage" class="error-message"></p>
-                    <button id="retryBtn" class="retry-btn">
-                        🔄 Try Again
-                    </button>
+                    <button id="retryBtn" class="retry-btn">🔄 Try Again</button>
+                </div>
+            </div>
+
+            <!-- Examples Section -->
+            <div class="examples-section" id="examplesContainer">
+                <p>💡 Try these examples:</p>
+                <button onclick="useExample('Make a Chrome extension that blocks all images and replaces them with a cute cat picture')">Block all images...</button>
+                <button onclick="useExample('Make a Chrome extension that highlights all links in yellow')">Highlight all links...</button>
+                <button onclick="useExample('Make a Chrome extension that shows an alert saying Hello from Extensio.ai!')">Show alert...</button>
+            </div>
+
+            <!-- Templates Section -->
+            <div class="templates-section">
+                <h3>🎯 Quick Start Templates</h3>
+                <p>Choose a template to get started instantly!</p>
+                <div class="templates-grid" id="templatesContainer">
+                    <p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 20px;">
+                        ⏳ Loading templates...
+                    </p>
                 </div>
             </div>
         </main>
@@ -143,15 +128,9 @@
             <p class="footer-small">Extensio.ai - No Code Extension Factory</p>
         </footer>
     </div>
-    <!-- Templates Section -->
-<div class="templates-section">
-    <h3>🎯 Quick Start Templates</h3>
-    <p>Choose a template to get started instantly!</p>
-    <div class="templates-grid" id="templatesContainer">
-        <!-- Templates will be loaded here -->
-    </div>
-</div>
 
+    <!-- Scripts -->
+    <script src="/templates.js"></script>
     <script src="/script.js"></script>
 </body>
 </html>
