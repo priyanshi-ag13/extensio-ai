@@ -82,11 +82,18 @@ async function generateExtension() {
         
         if (data.success) {
             // Save generation data
-            currentGeneration.prompt = prompt;
-            currentGeneration.name = prompt.substring(0, 40);
-            currentGeneration.files = data.files;
-            currentGeneration.downloadUrl = data.downloadUrl;
-            
+            currentGeneration = {
+        prompt: prompt,
+        name: prompt.substring(0, 40),
+        files: data.files,
+        downloadUrl: data.downloadUrl
+    };
+         // Show Save button
+const saveBtn = document.getElementById('saveToLibraryBtn');
+if (saveBtn) {
+    saveBtn.style.display = 'inline-flex';
+    saveBtn.onclick = saveToLibrary;
+}   
             console.log('✅ Generation successful!', currentGeneration);
             
             // Show result
@@ -354,3 +361,59 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 console.log('✅ Script initialization complete!');
+// ========== SAVE TO LIBRARY ==========
+async function saveToLibrary() {
+    console.log('💾 Save to Library clicked!');
+    
+    // Check if user is logged in
+    if (!isLoggedIn) {
+        alert('Please login first to save extensions!');
+        window.location.href = '/test-auth.html';
+        return;
+    }
+    
+    // Check if we have data to save
+    if (!currentGeneration || !currentGeneration.files) {
+        alert('Please generate an extension first!');
+        return;
+    }
+    
+    const saveBtn = document.getElementById('saveToLibraryBtn');
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = '💾 Saving...';
+    saveBtn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/extensions/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                prompt: currentGeneration.prompt,
+                name: currentGeneration.name || currentGeneration.prompt.substring(0, 40),
+                files: currentGeneration.files,
+                downloadUrl: currentGeneration.downloadUrl
+            })
+        });
+        
+        const data = await response.json();
+        console.log('📥 Save response:', data);
+        
+        if (data.success) {
+            alert('✅ Extension saved to your library! View it in "My Library"');
+            saveBtn.textContent = '✅ Saved!';
+            setTimeout(() => {
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+            }, 2000);
+        } else {
+            throw new Error(data.error || 'Save failed');
+        }
+    } catch (error) {
+        console.error('❌ Save error:', error);
+        alert('❌ Failed to save: ' + error.message);
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+    }
+}
