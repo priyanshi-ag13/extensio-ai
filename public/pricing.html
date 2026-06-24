@@ -1,0 +1,63 @@
+<!-- public/pricing.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - Extensio.ai</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <span class="logo-icon">🤖</span>
+                <span class="logo-text">Extensio<span class="highlight">.ai</span></span>
+            </div>
+            <p class="tagline">Choose the plan that works for you</p>
+        </header>
+        
+        <main style="padding: 40px 30px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+                <!-- Free Plan -->
+                <div style="background: #f8f9fa; border-radius: 16px; padding: 30px; text-align: center; border: 2px solid #e0e0e8;">
+                    <h3 style="font-size: 1.5rem; color: #1a1a2e;">Free</h3>
+                    <div style="font-size: 2.5rem; font-weight: 700; color: #1a1a2e; margin: 15px 0;">$0</div>
+                    <ul style="list-style: none; padding: 0; text-align: left;">
+                        <li style="padding: 8px 0;">✅ 5 Free Generations</li>
+                        <li style="padding: 8px 0;">✅ Basic Extensions</li>
+                        <li style="padding: 8px 0;">❌ Premium Templates</li>
+                        <li style="padding: 8px 0;">❌ Priority Support</li>
+                    </ul>
+                    <a href="/" style="display: block; margin-top: 20px; padding: 12px; background: #e0e0e8; color: #555; border-radius: 10px; text-decoration: none; font-weight: 600;">Current Plan</a>
+                </div>
+                
+                <!-- Premium Plan -->
+                <div style="background: linear-gradient(135deg, #4f46e5, #7c3aed); border-radius: 16px; padding: 30px; text-align: center; color: white; transform: scale(1.02); box-shadow: 0 10px 40px rgba(79, 70, 229, 0.3);">
+                    <div style="background: #fcd34d; color: #1a1a2e; padding: 4px 12px; border-radius: 20px; display: inline-block; font-size: 0.8rem; font-weight: 700;">POPULAR</div>
+                    <h3 style="font-size: 1.5rem; margin-top: 10px;">Premium</h3>
+                    <div style="font-size: 2.5rem; font-weight: 700; margin: 15px 0;">$9.99</div>
+                    <div style="font-size: 0.9rem; opacity: 0.8;">per month</div>
+                    <ul style="list-style: none; padding: 0; text-align: left; margin-top: 15px;">
+                        <li style="padding: 8px 0;">✅ Unlimited Generations</li>
+                        <li style="padding: 8px 0;">✅ All Templates</li>
+                        <li style="padding: 8px 0;">✅ Priority Support</li>
+                        <li style="padding: 8px 0;">✅ Version History</li>
+                    </ul>
+                    <button onclick="alert('🚀 Premium subscription coming soon!')" style="margin-top: 20px; padding: 12px 30px; background: white; color: #4f46e5; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%; font-size: 1rem;">
+                        Subscribe Now
+                    </button>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="/" style="color: #4f46e5; text-decoration: none;">← Back to Home</a>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Powered by Google Gemini AI • Chrome Extension Manifest V3</p>
+        </footer>
+    </div>
+</body>
+</html>

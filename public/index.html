@@ -1,5 +1,5 @@
 <!-- public/index.html -->
-<!-- Extensio.ai - No-Code Extension Factory -->
+<!-- Extensio.ai - Main Page -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -8,30 +8,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Extensio.ai - Create Chrome Extensions with AI</title>
     <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="/dark-mode.css">
+    <a href="/pricing.html" style="color: white; background: rgba(255,215,0,0.3); padding: 6px 16px; border-radius: 20px; text-decoration: none; font-size: 0.85rem; margin-left: 10px;">
+    ⭐ Upgrade
+</a>
 </head>
 <body>
-    <!-- Dark Mode Toggle -->
-    <div class="theme-toggle-wrapper">
-        <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">
-            <span class="toggle-icon">🌙</span>
-            <span class="toggle-label">Dark Mode</span>
-        </button>
-    </div>
-
     <div class="container">
         <!-- Header -->
         <header>
-            <div class="logo">
-                <span class="logo-icon">🤖</span>
-                <span class="logo-text">Extensio<span class="highlight">.ai</span></span>
-            </div>
-            <p class="tagline">Turn your ideas into Chrome extensions • No coding required</p>
-        </header>
-        <div class="nav-links" style="text-align: center; padding: 10px 0;">
-    <a href="/dashboard.html" class="nav-link">📁 My Library</a>
-</div>
+            <!-- Dark Mode Toggle -->
+<button id="darkModeToggle" style="
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 999;
+    background: white;
+    border: 2px solid #e0e0e8;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+">
+    🌙
+</button>
+    <div class="logo">
+        <span class="logo-icon">🤖</span>
+        <span class="logo-text">Extensio<span class="highlight">.ai</span></span>
+    </div>
+    <p class="tagline">Turn your ideas into Chrome extensions • No coding required</p>
+</header>
 
+<!-- My Library Button - OUTSIDE header (won't vanish) -->
+<div style="text-align: center; padding: 10px 0; background: rgba(79, 70, 229, 0.05); border-bottom: 1px solid #e0e0e8;">
+    <a href="/dashboard.html" class="library-btn" style="display: inline-block; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; padding: 10px 30px; border-radius: 10px; text-decoration: none; font-weight: 600; transition: transform 0.3s;">
+        📁 My Library
+    </a>
+</div>
         <!-- Main Content -->
         <main>
             <!-- Input Section -->
@@ -50,7 +65,21 @@
                     </div>
                 </div>
             </div>
-
+            <div id="trialBanner" style="display: none; padding: 12px 16px; border-radius: 10px; margin-bottom: 15px; background: #fef3c7; border: 1px solid #f59e0b;">
+    <span id="trialText">✅ 5 free generations remaining</span>
+    <a href="/pricing.html" style="color: #d97706; font-weight: 600; margin-left: 10px;">Upgrade →</a>
+</div>
+<!-- Prompt Suggestions -->
+<div class="suggestions-section">
+    <p style="font-size: 0.9rem; color: #666; margin-bottom: 8px;">💡 Try these prompts:</p>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <button class="suggestion-btn" data-prompt="Make a Chrome extension that blocks all images on a website">🖼️ Block Images</button>
+        <button class="suggestion-btn" data-prompt="Make a Chrome extension that changes background color to dark mode">🌙 Dark Mode</button>
+        <button class="suggestion-btn" data-prompt="Make a Chrome extension that highlights all links in yellow">🔗 Highlight Links</button>
+        <button class="suggestion-btn" data-prompt="Make a Chrome extension that shows a popup alert saying Hello World">💬 Alert Popup</button>
+        <button class="suggestion-btn" data-prompt="Make a Chrome extension that changes all fonts to Comic Sans">🔤 Font Changer</button>
+    </div>
+</div>
             <!-- Loading Section -->
             <div id="loadingSection" class="loading-section hidden">
                 <div class="spinner"></div>
@@ -73,12 +102,11 @@
                                 <span>Ready to install in Chrome</span>
                             </div>
                         </div>
-                        <div class="action-buttons">
-                           <button id="saveToLibraryBtn" class="save-library-btn" style="display: none;">
-    💾 Save to Library
-</button>
-                            <button id="shareBtn" class="share-btn">📤 Share</button>
+                        
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button id="saveToLibraryBtn" class="save-library-btn" style="display: none;">💾 Save to Library</button>
                             <button id="downloadBtn" class="download-btn">⬇️ Download ZIP</button>
+                            
                         </div>
                     </div>
 
@@ -106,25 +134,6 @@
                     <button id="retryBtn" class="retry-btn">🔄 Try Again</button>
                 </div>
             </div>
-
-            <!-- Examples Section -->
-            <div class="examples-section" id="examplesContainer">
-                <p>💡 Try these examples:</p>
-                <button onclick="useExample('Make a Chrome extension that blocks all images and replaces them with a cute cat picture')">Block all images...</button>
-                <button onclick="useExample('Make a Chrome extension that highlights all links in yellow')">Highlight all links...</button>
-                <button onclick="useExample('Make a Chrome extension that shows an alert saying Hello from Extensio.ai!')">Show alert...</button>
-            </div>
-
-            <!-- Templates Section -->
-            <div class="templates-section">
-                <h3>🎯 Quick Start Templates</h3>
-                <p>Choose a template to get started instantly!</p>
-                <div class="templates-grid" id="templatesContainer">
-                    <p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 20px;">
-                        ⏳ Loading templates...
-                    </p>
-                </div>
-            </div>
         </main>
 
         <!-- Footer -->
@@ -134,8 +143,6 @@
         </footer>
     </div>
 
-    <!-- Scripts -->
-    <script src="/templates.js"></script>
     <script src="/script.js"></script>
 </body>
 </html>
