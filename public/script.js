@@ -87,7 +87,12 @@ async function generateExtension() {
             };
             
             console.log('✅ Generation successful!', currentGeneration);
-            
+            // Show share button
+const shareBtn = document.getElementById('shareBtn');
+if (shareBtn) {
+    shareBtn.style.display = 'inline-flex';
+    shareBtn.onclick = shareExtension;
+}
             // Show result
             if (resultSection) resultSection.classList.remove('hidden');
             
@@ -222,9 +227,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('✅ Ready!');
 });
 // ========== DARK MODE ==========
+// ========== DARK MODE ==========
 function initDarkMode() {
     const toggleBtn = document.getElementById('darkModeToggle');
-    if (!toggleBtn) return;
+    if (!toggleBtn) {
+        console.log('⚠️ Dark mode button not found');
+        return;
+    }
+    
+    console.log('✅ Dark mode button found!');
+    
+    // Check saved preference
+    const saved = localStorage.getItem('extensio-theme');
+    if (saved === 'dark') {
+        document.body.classList.add('dark-mode');
+        toggleBtn.textContent = '☀️';
+        toggleBtn.style.background = '#2a2a4a';
+        toggleBtn.style.color = '#e8e8f0';
+    }
+    
+    toggleBtn.addEventListener('click', function() {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        this.textContent = isDark ? '☀️' : '🌙';
+        
+        if (isDark) {
+            this.style.background = '#2a2a4a';
+            this.style.color = '#e8e8f0';
+        } else {
+            this.style.background = 'white';
+            this.style.color = '#1a1a2e';
+        }
+        
+        localStorage.setItem('extensio-theme', isDark ? 'dark' : 'light');
+        console.log('🌙 Dark mode:', isDark ? 'ON' : 'OFF');
+    });
+}
     
     // Check saved preference
     const saved = localStorage.getItem('extensio-theme');
@@ -259,54 +297,7 @@ function initSuggestions() {
             }
         });
     });
-}// ========== DARK MODE ==========
-// This function handles the dark mode toggle
-function initDarkMode() {
-    const toggleBtn = document.getElementById('darkModeToggle');
-    if (!toggleBtn) {
-        console.log('⚠️ Dark mode button not found!');
-        return;
-    }
-    
-    console.log('✅ Dark mode button found!');
-    
-    // Check if user has a saved preference
-    const savedTheme = localStorage.getItem('extensio-theme');
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark-mode');
-        toggleBtn.textContent = '☀️';
-        toggleBtn.style.background = '#2a2a4a';
-        toggleBtn.style.color = '#e8e8f0';
-    }
-    
-    // Toggle on click
-    toggleBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        document.body.classList.toggle('dark-mode');
-        
-        const isDark = document.body.classList.contains('dark-mode');
-        this.textContent = isDark ? '☀️' : '🌙';
-        
-        // Change button style
-        if (isDark) {
-            this.style.background = '#2a2a4a';
-            this.style.color = '#e8e8f0';
-            this.style.borderColor = '#444466';
-        } else {
-            this.style.background = 'white';
-            this.style.color = '#1a1a2e';
-            this.style.borderColor = '#e0e0e8';
-        }
-        
-        localStorage.setItem('extensio-theme', isDark ? 'dark' : 'light');
-        console.log('🌙 Dark mode:', isDark ? 'ON' : 'OFF');
-    });
 }
-
-// Run dark mode when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    initDarkMode();
-});
 
 // Call this in DOMContentLoaded
 document.addEventListener('DOMContentLoaded', initSuggestions);
@@ -345,5 +336,36 @@ async function updateTrialInfo() {
         }
     } catch (error) {
         console.error('Trial info error:', error);
+    }
+}
+// ========== SHARE EXTENSION ==========
+function shareExtension() {
+    console.log('📤 Share button clicked!');
+    
+    if (!currentGeneration || !currentGeneration.prompt) {
+        alert('⚠️ Please generate an extension first!');
+        return;
+    }
+    
+    try {
+        const shareData = {
+            prompt: currentGeneration.prompt,
+            name: currentGeneration.name,
+            downloadUrl: currentGeneration.downloadUrl
+        };
+        
+        const encoded = btoa(JSON.stringify(shareData));
+        const shareUrl = window.location.origin + '/?share=' + encoded;
+        
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(shareUrl)
+                .then(() => alert('✅ Share link copied to clipboard!'))
+                .catch(() => prompt('📤 Copy this link:', shareUrl));
+        } else {
+            prompt('📤 Copy this link:', shareUrl);
+        }
+    } catch (error) {
+        console.error('Share error:', error);
+        alert('Failed to create share link');
     }
 }
